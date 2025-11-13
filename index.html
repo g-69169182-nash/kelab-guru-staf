@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sistem Yuran Kelab Guru & Staf — v1.4.0</title>
+
+<style>
+  :root{
+    --bg:#f5f8fb; --card:#fff; --muted:#6b7280;
+    --green:#16a34a; --red:#e11d48; --blue:#0b69ff;
+    --panel-padding:20px;
+  }
+  html,body{
+    height:100%;margin:0;font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;
+    background:var(--bg);color:#1f2937;
+  }
+  header{padding:28px 20px;text-align:center}
+  header h1{margin:0;font-size:28px;color:#0f172a}
+  header h2{margin:6px 0 0;color:var(--muted);font-weight:500}
+  .versi{color:var(--muted);font-size:0.9rem;margin-top:4px}
+
+  .cards{display:flex;gap:18px;justify-content:center;padding:18px;flex-wrap:wrap}
+  .card{
+    background:var(--card);border-radius:12px;padding:18px 22px;
+    box-shadow:0 6px 16px rgba(2,6,23,0.06);width:260px;text-align:center
+  }
+  .card h3{margin:0;color:var(--muted);font-weight:600}
+  .card p{font-size:22px;margin:8px 0 0;font-weight:700}
+  .green{color:var(--green)} .red{color:var(--red)} .blue{color:var(--blue)}
+
+  .panel{
+    background:var(--card);margin:18px auto;padding:var(--panel-padding);
+    border-radius:10px;max-width:1200px;box-shadow:0 6px 18px rgba(2,6,23,0.04)
+  }
+  .panel h2{margin:0 0 12px;font-size:18px}
+
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  input[type="text"],input[type="password"],select{
+    padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;
+  }
+  button{padding:10px 14px;border-radius:9px;border:none;cursor:pointer;font-weight:700}
+  button.primary{background:var(--blue);color:#fff}
+  button.success{background:var(--green);color:#fff}
+  button.danger{background:var(--red);color:#fff}
+
+  .status{margin-top:12px;color:var(--red);font-weight:600}
+
+  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+  th,td{padding:10px;border:1px solid #e6eef8;text-align:center}
+  th{background:#eef6ff;color:#0b4a73}
+  tbody tr:nth-child(even){background:#fbfdff}
+
+  .cell-paid{color:var(--green);font-weight:700}
+  .cell-missed{color:var(--red);font-weight:700}
+  .small-emoji{font-size:14px;margin-left:6px}
+
+  .col-sudah{color:var(--blue);font-weight:700}
+  .col-belum{color:var(--red);font-weight:700}
+
+  /* perbelanjaan */
+  .spend-table th{background:#fff7f7;color:var(--red)}
+  .muted-note{color:var(--muted);margin-top:8px}
+
+  @media(max-width:800px){
+    .cards{flex-direction:column;align-items:center}
+    .card{width:92%}
+  }
+</style>
+
+</head>
+<body>
+
+<header>
+  <h1>Sistem Yuran Kelab Guru & Staf</h1>
+  <h2>Sekolah Kebangsaan Sungai Balai</h2>
+  <div class="versi">Versi 1.4.0</div>
+</header>
+
+<!-- Kad Ringkasan -->
+<div class="cards">
+  <div class="card"><h3>Jumlah Kutipan</h3><p id="jumlahKutipan" class="green">RM 0.00</p></div>
+  <div class="card"><h3>Jumlah Perbelanjaan</h3><p id="jumlahBelanja" class="red">RM 0.00</p></div>
+  <div class="card"><h3>Baki</h3><p id="baki" class="blue">RM 0.00</p></div>
+</div>
+
+<!-- Panel Admin -->
+<div class="panel" id="adminPanelWrap">
+  <h2>🔐 Panel Admin</h2>
+  <div class="row">
+    <input id="adminPass" type="password" placeholder="Masukkan kata laluan" />
+    <button class="primary" id="loginBtn">Log Masuk</button>
+  </div>
+
+  <div id="adminControls" style="display:none;margin-top:12px">
+    <div class="row">
+      <input id="namaAhli" type="text" placeholder="Nama Ahli" />
+      <select id="jawatanSelect">
+        <option value="">Pilih Jawatan</option>
+        <option value="Guru">Guru</option>
+        <option value="Staf">Staf</option>
+      </select>
+      <button id="tambahBtn" class="success">Tambah Ahli</button>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+      <button id="logoutBtn" class="danger">Log Keluar</button>
+    </div>
+
+    <div id="statusMsg" class="status" style="display:none"></div>
+  </div>
+</div>
+
+<!-- Jadual Bayaran -->
+<div class="panel">
+  <h2>📊 Rekod Bayaran Ahli</h2>
+  <div class="muted-note">Klik <b>❌</b> untuk belum bayar, <b>✅</b> untuk sudah bayar.</div>
+  <table id="bayaranTable"></table>
+</div>
+
+<!-- Jadual Perbelanjaan -->
+<div class="panel">
+  <h2>💰 Rekod Perbelanjaan Kelab</h2>
+  <table id="belanjaTable" class="spend-table"></table>
+</div>
+
+<script>
+// ==============================
+// CONFIG
+// ==============================
+
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0ER_5FMqOrZxH9l82HPfGTnHsdNZw-3uIRC7BXn7hStnZRfxLcQ7Sod9zFo45Rrxq/exec";
+let ADMIN_KEY = "Sksb@abab023";
+let isAdmin = false;
+
+// Elemen
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const tambahBtn = document.getElementById("tambahBtn");
+const statusMsg = document.getElementById("statusMsg");
+
+// ==============================
+// LOGIN / LOGOUT ADMIN
+// ==============================
+
+loginBtn.addEventListener("click", () => {
+  const val = document.getElementById("adminPass").value || "";
+  if (val === ADMIN_KEY) {
+    isAdmin = true;
+    document.getElementById("adminControls").style.display = "block";
+    statusMsg.style.display = "block";
+    statusMsg.style.color = "var(--green)";
+    statusMsg.textContent = "✅ Log masuk berjaya!";
+  } else {
+    isAdmin = false;
+    document.getElementById("adminControls").style.display = "none";
+    statusMsg.style.display = "block";
+    statusMsg.style.color = "var(--red)";
+    statusMsg.textContent = "❌ Kata laluan salah.";
+  }
+});
+
+logoutBtn.addEventListener("click", () => {
+  isAdmin = false;
+  document.getElementById("adminControls").style.display = "none";
+  statusMsg.style.display = "block";
+  statusMsg.style.color = "var(--blue)";
+  statusMsg.textContent = "ℹ️ Anda telah log keluar.";
+});
+
+// ==============================
+// FETCH HELPER
+// ==============================
+
+async function apiGet() {
+  const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+  return res.json();
+}
+
+// ==============================
+// FORMAT
+// ==============================
+
+function formatRM(n) {
+  return "RM " + Number(n || 0).toFixed(2);
+}
+
+// ==============================
+// RENDER RINGKASAN
+// ==============================
+
+function renderSummary(json) {
+  const header = json.bayaran[0];
+  const rows = json.bayaran.slice(1);
+  const idx = header.indexOf("Jumlah Sudah Bayar");
+  const idxBelum = header.indexOf("Jumlah Belum Bayar");
+
+  let total = 0;
+  let belum = 0;
+
+  rows.forEach(r => {
+    total += Number(r[idx] || 0);
+    belum += Number(r[idxBelum] || 0);
+  });
+
+  let belanja = 0;
+  json.belanja.slice(1).forEach(r => belanja += Number(r[2] || 0));
+
+  document.getElementById("jumlahKutipan").textContent = formatRM(total);
+  document.getElementById("jumlahBelanja").textContent = formatRM(belanja);
+  document.getElementById("baki").textContent = formatRM(total - belanja);
+}
+
+// ==============================
+// RENDER BAYARAN
+// ==============================
+
+function renderBayaran(json) {
+  const tbl = document.getElementById("bayaranTable");
+  const header = json.bayaran[0];
+  const rows = json.bayaran.slice(1);
+
+  let html = "<thead><tr>";
+  header.forEach(h => html += `<th>${h}</th>`);
+  html += "</tr></thead><tbody>";
+
+  rows.forEach((r, ri) => {
+    html += "<tr>";
+    r.forEach((c, ci) => {
+      const col = header[ci];
+
+      if (col === "Jumlah Sudah Bayar")
+        html += `<td class="col-sudah">${c}</td>`;
+
+      else if (col === "Jumlah Belum Bayar")
+        html += `<td class="col-belum">${c}</td>`;
+
+      else if (ci >= 2 && ci <= 13) {
+        const val = Number(c || 0);
+        html += val > 0
+          ? `<td class="cell-paid">${val} <span>✅</span></td>`
+          : `<td class="cell-missed">— <span>❌</span></td>`;
+      }
+
+      else html += `<td>${c || "—"}</td>`;
+    });
+    html += "</tr>";
+  });
+
+  html += "</tbody>";
+  tbl.innerHTML = html;
+}
+
+// ==============================
+// RENDER BELANJA
+// ==============================
+
+function renderBelanja(json) {
+  const tbl = document.getElementById("belanjaTable");
+  const h = json.belanja[0];
+  const rows = json.belanja.slice(1);
+
+  let html = "<thead><tr>";
+  h.forEach(x => html += `<th>${x}</th>`);
+  html += "</tr></thead><tbody>";
+
+  rows.forEach(r => {
+    html += "<tr>";
+    r.forEach((c, ci) => {
+      if (ci === 2) html += `<td>${formatRM(c)}</td>`;
+      else html += `<td>${c}</td>`;
+    });
+    html += "</tr>";
+  });
+
+  html += "</tbody>";
+  tbl.innerHTML = html;
+}
+
+// ==============================
+// LOAD DATA
+// ==============================
+
+async function muatData() {
+  try {
+    const json = await apiGet();
+    renderSummary(json);
+    renderBayaran(json);
+    renderBelanja(json);
+  } catch (err) {
+    console.error(err);
+  }
+}
+muatData();
+
+// ==============================
+// TAMBAH AHLI
+// ==============================
+
+async function tambahAhli() {
+  if (!isAdmin) return alert("Log masuk admin dahulu.");
+
+  const nama = document.getElementById("namaAhli").value.trim();
+  const jawatan = document.getElementById("jawatanSelect").value;
+
+  if (!nama || !jawatan) return alert("Lengkapkan nama dan jawatan.");
+
+  try {
+    statusMsg.style.display="block";
+    statusMsg.style.color="var(--blue)";
+    statusMsg.textContent="⏳ Menambah ahli...";
+
+    await fetch(SCRIPT_URL, {
+      method:"POST",
+      mode:"no-cors",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        action:"tambahAhli",
+        apiKey:ADMIN_KEY,
+        nama,jawatan
+      })
+    });
+
+    statusMsg.style.color="var(--green)";
+    statusMsg.textContent="✔ Ahli berjaya ditambah!";
+
+    setTimeout(()=>muatData(),1200);
+
+    document.getElementById("namaAhli").value="";
+    document.getElementById("jawatanSelect").value="";
+  }
+  catch(e){
+    statusMsg.style.color="var(--red)";
+    statusMsg.textContent="❌ Ralat sambungan.";
+  }
+}
+
+tambahBtn.addEventListener("click", tambahAhli);
+
+</script>
+
+</body>
+</html>
