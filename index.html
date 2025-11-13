@@ -3,341 +3,303 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sistem Yuran Kelab Guru & Staf — v1.4.0</title>
-
+<title>Sistem Yuran Kelab Guru & Staf — v1.5.0</title>
 <style>
-  :root{
-    --bg:#f5f8fb; --card:#fff; --muted:#6b7280;
-    --green:#16a34a; --red:#e11d48; --blue:#0b69ff;
-    --panel-padding:20px;
-  }
-  html,body{
-    height:100%;margin:0;font-family:Inter,"Segoe UI",Roboto,Arial,sans-serif;
-    background:var(--bg);color:#1f2937;
-  }
-  header{padding:28px 20px;text-align:center}
-  header h1{margin:0;font-size:28px;color:#0f172a}
+  :root{--bg:#f5f8fb;--card:#fff;--muted:#6b7280;--green:#16a34a;--red:#e11d48;--blue:#0b69ff;--panel-padding:20px;}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#111827}
+  header{padding:20px;text-align:center}
+  header h1{margin:0;font-size:26px}
   header h2{margin:6px 0 0;color:var(--muted);font-weight:500}
-  .versi{color:var(--muted);font-size:0.9rem;margin-top:4px}
-
-  .cards{display:flex;gap:18px;justify-content:center;padding:18px;flex-wrap:wrap}
-  .card{
-    background:var(--card);border-radius:12px;padding:18px 22px;
-    box-shadow:0 6px 16px rgba(2,6,23,0.06);width:260px;text-align:center
-  }
+  .cards{display:flex;gap:12px;justify-content:center;padding:12px;flex-wrap:wrap}
+  .card{background:var(--card);border-radius:10px;padding:12px 16px;box-shadow:0 6px 16px rgba(0,0,0,0.06);width:230px;text-align:center}
   .card h3{margin:0;color:var(--muted);font-weight:600}
-  .card p{font-size:22px;margin:8px 0 0;font-weight:700}
-  .green{color:var(--green)} .red{color:var(--red)} .blue{color:var(--blue)}
-
-  .panel{
-    background:var(--card);margin:18px auto;padding:var(--panel-padding);
-    border-radius:10px;max-width:1200px;box-shadow:0 6px 18px rgba(2,6,23,0.04)
-  }
-  .panel h2{margin:0 0 12px;font-size:18px}
-
-  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  input[type="text"],input[type="password"],select{
-    padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;
-  }
-  button{padding:10px 14px;border-radius:9px;border:none;cursor:pointer;font-weight:700}
-  button.primary{background:var(--blue);color:#fff}
-  button.success{background:var(--green);color:#fff}
-  button.danger{background:var(--red);color:#fff}
-
-  .status{margin-top:12px;color:var(--red);font-weight:600}
-
-  table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
-  th,td{padding:10px;border:1px solid #e6eef8;text-align:center}
-  th{background:#eef6ff;color:#0b4a73}
+  .card p{font-size:20px;margin:8px 0 0;font-weight:700}
+  .green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}
+  .panel{background:var(--card);margin:12px auto;padding:16px;border-radius:10px;max-width:1100px;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  input,select,button{padding:8px;border-radius:8px;border:1px solid #e5e7eb;font-size:14px}
+  button{cursor:pointer;font-weight:700}
+  button.primary{background:var(--blue);color:#fff;border:none}
+  button.success{background:var(--green);color:#fff;border:none}
+  button.danger{background:var(--red);color:#fff;border:none}
+  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
+  th,td{padding:8px;border:1px solid #eef2f7;text-align:center}
+  th{background:#f0f9ff;color:#0b5394}
   tbody tr:nth-child(even){background:#fbfdff}
-
   .cell-paid{color:var(--green);font-weight:700}
   .cell-missed{color:var(--red);font-weight:700}
-  .small-emoji{font-size:14px;margin-left:6px}
-
   .col-sudah{color:var(--blue);font-weight:700}
   .col-belum{color:var(--red);font-weight:700}
-
-  /* perbelanjaan */
-  .spend-table th{background:#fff7f7;color:var(--red)}
-  .muted-note{color:var(--muted);margin-top:8px}
-
-  @media(max-width:800px){
-    .cards{flex-direction:column;align-items:center}
-    .card{width:92%}
-  }
+  .actions{display:flex;gap:6px;justify-content:center}
+  .icon-btn{background:transparent;border:none;cursor:pointer;font-size:16px}
+  .small{font-size:12px;color:var(--muted)}
+  @media(max-width:800px){.cards{flex-direction:column;align-items:center}.card{width:92%}}
+  /* dialog */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;z-index:50}
+  .dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:12px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.25);z-index:60;min-width:320px;display:none}
+  .dialog .row{justify-content:flex-end}
 </style>
-
 </head>
 <body>
-
 <header>
   <h1>Sistem Yuran Kelab Guru & Staf</h1>
-  <h2>Sekolah Kebangsaan Sungai Balai</h2>
-  <div class="versi">Versi 1.4.0</div>
+  <h2>Sekolah Kebangsaan Sungai Balai — Versi 1.5.0</h2>
 </header>
 
-<!-- Kad Ringkasan -->
 <div class="cards">
   <div class="card"><h3>Jumlah Kutipan</h3><p id="jumlahKutipan" class="green">RM 0.00</p></div>
   <div class="card"><h3>Jumlah Perbelanjaan</h3><p id="jumlahBelanja" class="red">RM 0.00</p></div>
   <div class="card"><h3>Baki</h3><p id="baki" class="blue">RM 0.00</p></div>
 </div>
 
-<!-- Panel Admin -->
 <div class="panel" id="adminPanelWrap">
   <h2>🔐 Panel Admin</h2>
-  <div class="row">
-    <input id="adminPass" type="password" placeholder="Masukkan kata laluan" />
-    <button class="primary" id="loginBtn">Log Masuk</button>
+  <div class="row" style="margin-bottom:8px">
+    <input id="adminPass" type="password" placeholder="Masukkan kata laluan admin" />
+    <button id="loginBtn" class="primary">Log Masuk</button>
+    <button id="logoutBtn" class="danger" style="display:none">Log Keluar</button>
+    <span id="loginStatus" class="small"></span>
   </div>
 
-  <div id="adminControls" style="display:none;margin-top:12px">
+  <div id="adminControls" style="display:none;margin-top:8px">
     <div class="row">
       <input id="namaAhli" type="text" placeholder="Nama Ahli" />
-      <select id="jawatanSelect">
-        <option value="">Pilih Jawatan</option>
-        <option value="Guru">Guru</option>
-        <option value="Staf">Staf</option>
-      </select>
+      <select id="jawatanSelect"><option value="">Pilih Jawatan</option><option value="Guru">Guru</option><option value="Staf">Staf</option></select>
       <button id="tambahBtn" class="success">Tambah Ahli</button>
     </div>
 
-    <div class="row" style="margin-top:10px">
-      <button id="logoutBtn" class="danger">Log Keluar</button>
+    <div style="margin-top:10px;border-top:1px solid #eef2f7;padding-top:8px">
+      <strong>Tambah Perbelanjaan</strong>
+      <div class="row" style="margin-top:6px">
+        <input id="belanjaTarikh" placeholder="Tarikh (YYYY-MM-DD) - optional" />
+        <input id="belanjaTujuan" placeholder="Tujuan" />
+        <input id="belanjaJumlah" placeholder="Jumlah (nombor sahaja)" />
+        <input id="belanjaCatatan" placeholder="Catatan (optional)" />
+        <button id="tambahBelanjaBtn" class="danger">Tambah</button>
+      </div>
     </div>
 
-    <div id="statusMsg" class="status" style="display:none"></div>
+    <div id="adminMsg" class="small" style="margin-top:8px"></div>
   </div>
 </div>
 
-<!-- Jadual Bayaran -->
 <div class="panel">
   <h2>📊 Rekod Bayaran Ahli</h2>
-  <div class="muted-note">Klik <b>❌</b> untuk belum bayar, <b>✅</b> untuk sudah bayar.</div>
+  <div class="small muted-note">Klik ikon ✏️ untuk edit (Nama/Jawatan). Klik 🗑️ untuk pindahkan ahli ke arkib.</div>
   <table id="bayaranTable"></table>
 </div>
 
-<!-- Jadual Perbelanjaan -->
 <div class="panel">
   <h2>💰 Rekod Perbelanjaan Kelab</h2>
   <table id="belanjaTable" class="spend-table"></table>
 </div>
 
+<div class="overlay" id="overlay"></div>
+<div class="dialog" id="editDialog" aria-hidden="true">
+  <h3 id="editTitle">Edit Ahli</h3>
+  <div style="margin-top:8px">
+    <input id="editName" placeholder="Nama" style="width:100%;margin-bottom:8px"/>
+    <select id="editJawatan" style="width:100%;margin-bottom:8px"><option value="Guru">Guru</option><option value="Staf">Staf</option></select>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button id="editCancel" class="primary" style="background:#e5e7eb;color:#111">Batal</button>
+    <button id="editSave" class="success">Simpan</button>
+  </div>
+</div>
+
 <script>
-// ==============================
-// CONFIG
-// ==============================
-
+/* CONFIG */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0ER_5FMqOrZxH9l82HPfGTnHsdNZw-3uIRC7BXn7hStnZRfxLcQ7Sod9zFo45Rrxq/exec";
-let ADMIN_KEY = "Sksb@abab023";
+const ADMIN_API_KEY = "Sksb@abab023";
+const AUTO_REFRESH_INTERVAL = 20 * 1000; // 20 seconds
+const ARCHIVE_SHEET = "Ahli_Arkib";
+
 let isAdmin = false;
+let latestJson = null;
+let autoRefreshTimer = null;
 
-// Elemen
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const tambahBtn = document.getElementById("tambahBtn");
-const statusMsg = document.getElementById("statusMsg");
+/* helpers */
+const $ = id => document.getElementById(id);
+function setAdminMsg(msg, ok=true){ const el=$('adminMsg'); el.style.color= ok? 'var(--green)':'var(--red)'; el.textContent=msg; el.style.display='block'; }
+function clearAdminMsg(){ const el=$('adminMsg'); el.textContent=''; el.style.display='none'; }
 
-// ==============================
-// LOGIN / LOGOUT ADMIN
-// ==============================
-
-loginBtn.addEventListener("click", () => {
-  const val = document.getElementById("adminPass").value || "";
-  if (val === ADMIN_KEY) {
-    isAdmin = true;
-    document.getElementById("adminControls").style.display = "block";
-    statusMsg.style.display = "block";
-    statusMsg.style.color = "var(--green)";
-    statusMsg.textContent = "✅ Log masuk berjaya!";
-  } else {
-    isAdmin = false;
-    document.getElementById("adminControls").style.display = "none";
-    statusMsg.style.display = "block";
-    statusMsg.style.color = "var(--red)";
-    statusMsg.textContent = "❌ Kata laluan salah.";
-  }
-});
-
-logoutBtn.addEventListener("click", () => {
-  isAdmin = false;
-  document.getElementById("adminControls").style.display = "none";
-  statusMsg.style.display = "block";
-  statusMsg.style.color = "var(--blue)";
-  statusMsg.textContent = "ℹ️ Anda telah log keluar.";
-});
-
-// ==============================
-// FETCH HELPER
-// ==============================
-
-async function apiGet() {
-  const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
+async function apiGet(){
+  const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+  if(!res.ok) throw new Error('HTTP ' + res.status);
   return res.json();
 }
-
-// ==============================
-// FORMAT
-// ==============================
-
-function formatRM(n) {
-  return "RM " + Number(n || 0).toFixed(2);
+async function apiPost(body){
+  const res = await fetch(SCRIPT_URL, {method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  try { return await res.json(); } catch (e) { return {}; }
 }
 
-// ==============================
-// RENDER RINGKASAN
-// ==============================
+/* rendering */
+function formatRM(n){ return 'RM '+ (Number(n)||0).toFixed(2); }
 
-function renderSummary(json) {
-  const header = json.bayaran[0];
-  const rows = json.bayaran.slice(1);
-  const idx = header.indexOf("Jumlah Sudah Bayar");
-  const idxBelum = header.indexOf("Jumlah Belum Bayar");
-
-  let total = 0;
-  let belum = 0;
-
-  rows.forEach(r => {
-    total += Number(r[idx] || 0);
-    belum += Number(r[idxBelum] || 0);
-  });
-
-  let belanja = 0;
-  json.belanja.slice(1).forEach(r => belanja += Number(r[2] || 0));
-
-  document.getElementById("jumlahKutipan").textContent = formatRM(total);
-  document.getElementById("jumlahBelanja").textContent = formatRM(belanja);
-  document.getElementById("baki").textContent = formatRM(total - belanja);
+function renderSummary(json){
+  const setting = json.setting || { totalKutipan:0, totalBelanja:0, baki:0 };
+  $('jumlahKutipan').textContent = formatRM(setting.totalKutipan);
+  $('jumlahBelanja').textContent = formatRM(setting.totalBelanja);
+  $('baki').textContent = formatRM(setting.baki);
 }
 
-// ==============================
-// RENDER BAYARAN
-// ==============================
-
-function renderBayaran(json) {
-  const tbl = document.getElementById("bayaranTable");
-  const header = json.bayaran[0];
-  const rows = json.bayaran.slice(1);
-
-  let html = "<thead><tr>";
-  header.forEach(h => html += `<th>${h}</th>`);
-  html += "</tr></thead><tbody>";
-
+/* bayaran table with action icons */
+function renderBayaran(json){
+  latestJson = json;
+  const tbl = $('bayaranTable');
+  tbl.innerHTML = '';
+  const b = json.bayaran || [];
+  if(!b || b.length===0){ tbl.innerHTML = '<tr><td>Tiada data.</td></tr>'; return; }
+  const header = b[0];
+  let html = '<thead><tr>';
+  header.forEach(h => html += '<th>' + h + '</th>');
+  html += '<th>Tindakan</th></tr></thead><tbody>';
+  const rows = b.slice(1);
   rows.forEach((r, ri) => {
-    html += "<tr>";
-    r.forEach((c, ci) => {
-      const col = header[ci];
-
-      if (col === "Jumlah Sudah Bayar")
-        html += `<td class="col-sudah">${c}</td>`;
-
-      else if (col === "Jumlah Belum Bayar")
-        html += `<td class="col-belum">${c}</td>`;
-
-      else if (ci >= 2 && ci <= 13) {
-        const val = Number(c || 0);
-        html += val > 0
-          ? `<td class="cell-paid">${val} <span>✅</span></td>`
-          : `<td class="cell-missed">— <span>❌</span></td>`;
+    html += '<tr data-row="'+ri+'">';
+    r.forEach((c,ci) => {
+      const col = header[ci] || '';
+      if(col === 'Jumlah Sudah Bayar') html += '<td class="col-sudah">'+ (c||0) +'</td>';
+      else if(col === 'Jumlah Belum Bayar') html += '<td class="col-belum">'+ (c||0) +'</td>';
+      else if(ci>=2 && ci<=13) {
+        const val = Number(c)||0;
+        html += val>0 ? '<td class="cell-paid">✓</td>' : '<td class="cell-missed">✗</td>';
+      } else {
+        html += '<td>' + (c||'—') + '</td>';
       }
-
-      else html += `<td>${c || "—"}</td>`;
     });
-    html += "</tr>";
+    // actions column (edit + archive)
+    html += '<td class="actions"><button class="icon-btn" data-action="edit" title="Edit">✏️</button><button class="icon-btn" data-action="archive" title="Arkib">🗑️</button></td>';
+    html += '</tr>';
   });
+  html += '</tbody>';
+  tbl.innerHTML = html;
 
-  html += "</tbody>";
+  // attach handlers
+  tbl.querySelectorAll('button[data-action]').forEach(btn=>{
+    btn.addEventListener('click', async (ev)=>{
+      const tr = ev.currentTarget.closest('tr');
+      const action = ev.currentTarget.getAttribute('data-action');
+      const rowIndex = Number(tr.getAttribute('data-row'));
+      if(action === 'edit') openEditDialog(rowIndex);
+      if(action === 'archive') archiveMember(rowIndex);
+    });
+  });
+}
+
+function renderBelanja(json){
+  const tbl = $('belanjaTable');
+  tbl.innerHTML = '';
+  const b = json.belanja || [];
+  if(!b || b.length<=1){ tbl.innerHTML = '<tr><td>Tiada rekod perbelanjaan.</td></tr>'; return; }
+  let html = '<thead><tr>';
+  b[0].forEach(h => html += '<th>' + h + '</th>');
+  html += '</tr></thead><tbody>';
+  b.slice(1).forEach(r => { html += '<tr>'; r.forEach((c,ci)=> html += '<td>' + (ci===2? formatRM(c): (c||'—')) + '</td>'); html += '</tr>'; });
+  html += '</tbody>';
   tbl.innerHTML = html;
 }
 
-// ==============================
-// RENDER BELANJA
-// ==============================
-
-function renderBelanja(json) {
-  const tbl = document.getElementById("belanjaTable");
-  const h = json.belanja[0];
-  const rows = json.belanja.slice(1);
-
-  let html = "<thead><tr>";
-  h.forEach(x => html += `<th>${x}</th>`);
-  html += "</tr></thead><tbody>";
-
-  rows.forEach(r => {
-    html += "<tr>";
-    r.forEach((c, ci) => {
-      if (ci === 2) html += `<td>${formatRM(c)}</td>`;
-      else html += `<td>${c}</td>`;
-    });
-    html += "</tr>";
-  });
-
-  html += "</tbody>";
-  tbl.innerHTML = html;
-}
-
-// ==============================
-// LOAD DATA
-// ==============================
-
-async function muatData() {
-  try {
+/* load data and render */
+async function loadAll(){
+  try{
     const json = await apiGet();
+    latestJson = json;
     renderSummary(json);
     renderBayaran(json);
     renderBelanja(json);
-  } catch (err) {
+    clearAdminMsg();
+  } catch(err){
     console.error(err);
-  }
-}
-muatData();
-
-// ==============================
-// TAMBAH AHLI
-// ==============================
-
-async function tambahAhli() {
-  if (!isAdmin) return alert("Log masuk admin dahulu.");
-
-  const nama = document.getElementById("namaAhli").value.trim();
-  const jawatan = document.getElementById("jawatanSelect").value;
-
-  if (!nama || !jawatan) return alert("Lengkapkan nama dan jawatan.");
-
-  try {
-    statusMsg.style.display="block";
-    statusMsg.style.color="var(--blue)";
-    statusMsg.textContent="⏳ Menambah ahli...";
-
-    await fetch(SCRIPT_URL, {
-      method:"POST",
-      mode:"no-cors",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({
-        action:"tambahAhli",
-        apiKey:ADMIN_KEY,
-        nama,jawatan
-      })
-    });
-
-    statusMsg.style.color="var(--green)";
-    statusMsg.textContent="✔ Ahli berjaya ditambah!";
-
-    setTimeout(()=>muatData(),1200);
-
-    document.getElementById("namaAhli").value="";
-    document.getElementById("jawatanSelect").value="";
-  }
-  catch(e){
-    statusMsg.style.color="var(--red)";
-    statusMsg.textContent="❌ Ralat sambungan.";
+    setAdminMsg('Gagal ambil data: ' + err.message, false);
   }
 }
 
-tambahBtn.addEventListener("click", tambahAhli);
+/* admin login/logout */
+$('loginBtn').addEventListener('click', ()=>{
+  const v = $('adminPass').value || '';
+  if(v === ADMIN_API_KEY){
+    isAdmin = true; $('adminControls').style.display='block'; $('logoutBtn').style.display='inline-block'; $('loginStatus').textContent='✅ Log masuk'; clearAdminMsg();
+  } else { isAdmin=false; setAdminMsg('Kata laluan salah', false); }
+});
+$('logoutBtn').addEventListener('click', ()=>{
+  isAdmin=false; $('adminControls').style.display='none'; $('logoutBtn').style.display='none'; $('loginStatus').textContent=''; setAdminMsg('Anda telah log keluar', true);
+});
+
+/* add member */
+$('tambahBtn').addEventListener('click', async ()=>{
+  if(!isAdmin) return alert('Sila log masuk admin');
+  const nama = $('namaAhli').value.trim(); const jawatan = $('jawatanSelect').value;
+  if(!nama||!jawatan) return alert('Sila isi nama & jawatan');
+  try{ setAdminMsg('Menghantar...', true);
+    await apiPost({ action:'tambahAhli', apiKey:ADMIN_API_KEY, nama, jawatan });
+    setAdminMsg('Ahli ditambah', true); $('namaAhli').value=''; $('jawatanSelect').value='';
+    setTimeout(loadAll, 900);
+  }catch(err){ setAdminMsg('Gagal tambah: '+err.message, false); }
+});
+
+/* add expense */
+$('tambahBelanjaBtn').addEventListener('click', async ()=>{
+  if(!isAdmin) return alert('Sila log masuk admin');
+  const tarikh = $('belanjaTarikh').value.trim() || new Date().toISOString();
+  const tujuan = $('belanjaTujuan').value.trim() || 'Perbelanjaan';
+  const jumlah = Number($('belanjaJumlah').value.trim()) || 0;
+  const cat = $('belanjaCatatan').value.trim() || '-';
+  if(!tujuan||jumlah<=0) return alert('Sila masukkan tujuan & jumlah (>0)');
+  try{ setAdminMsg('Menghantar...', true);
+    await apiPost({ action:'tambahBelanja', apiKey:ADMIN_API_KEY, tarikh, tujuan, jumlah, catatan:cat });
+    setAdminMsg('Perbelanjaan ditambah', true);
+    setTimeout(loadAll, 900);
+  }catch(err){ setAdminMsg('Gagal tambah belanja: '+err.message, false); }
+});
+
+/* edit dialog */
+function openEditDialog(rowIndex){
+  if(!isAdmin) return alert('Sila log masuk admin');
+  const row = latestJson.bayaran[1+rowIndex];
+  if(!row) return alert('Baris tidak ditemui');
+  $('editName').value = row[0] || '';
+  $('editJawatan').value = row[1] || 'Guru';
+  $('overlay').style.display='block'; $('editDialog').style.display='block'; $('editDialog').setAttribute('aria-hidden','false');
+  $('editSave').dataset.row = rowIndex;
+}
+$('editCancel').addEventListener('click', ()=>{ $('overlay').style.display='none'; $('editDialog').style.display='none'; $('editDialog').setAttribute('aria-hidden','true'); });
+$('editSave').addEventListener('click', async ()=>{
+  const rowIndex = Number($('editSave').dataset.row);
+  const newName = $('editName').value.trim();
+  const newJawatan = $('editJawatan').value;
+  if(!newName) return alert('Nama diperlukan');
+  try{
+    await apiPost({ action:'editAhli', apiKey:ADMIN_API_KEY, rowIndex, nama:newName, jawatan:newJawatan });
+    $('overlay').style.display='none'; $('editDialog').style.display='none'; $('editDialog').setAttribute('aria-hidden','true');
+    setAdminMsg('Ahli dikemaskini', true); setTimeout(loadAll, 900);
+  }catch(err){ setAdminMsg('Gagal edit: '+err.message, false); }
+});
+
+/* archive (move to Ahli_Arkib) */
+async function archiveMember(rowIndex){
+  if(!isAdmin) return alert('Sila log masuk admin');
+  if(!confirm('Pindahkan ahli ke arkib?')) return;
+  try{
+    await apiPost({ action:'padamAhli', apiKey:ADMIN_API_KEY, rowIndex, arkibSheet: ARCHIVE_SHEET });
+    setAdminMsg('Ahli dipindah ke arkib', true);
+    setTimeout(loadAll, 900);
+  }catch(err){ setAdminMsg('Gagal arkib: '+err.message, false); }
+}
+
+/* update payment cell - handled elsewhere (not changed) */
+
+/* auto refresh */
+function startAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(()=>{ loadAll(); }, AUTO_REFRESH_INTERVAL);
+}
+startAutoRefresh();
+
+/* initial load */
+loadAll();
 
 </script>
-
 </body>
 </html>
