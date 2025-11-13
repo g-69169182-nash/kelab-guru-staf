@@ -1,305 +1,374 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sistem Yuran Kelab Guru & Staf — v1.5.0</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sistem Yuran Kelab Guru & Staf — v1.5.1</title>
+
 <style>
-  :root{--bg:#f5f8fb;--card:#fff;--muted:#6b7280;--green:#16a34a;--red:#e11d48;--blue:#0b69ff;--panel-padding:20px;}
-  html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#111827}
-  header{padding:20px;text-align:center}
-  header h1{margin:0;font-size:26px}
-  header h2{margin:6px 0 0;color:var(--muted);font-weight:500}
-  .cards{display:flex;gap:12px;justify-content:center;padding:12px;flex-wrap:wrap}
-  .card{background:var(--card);border-radius:10px;padding:12px 16px;box-shadow:0 6px 16px rgba(0,0,0,0.06);width:230px;text-align:center}
-  .card h3{margin:0;color:var(--muted);font-weight:600}
-  .card p{font-size:20px;margin:8px 0 0;font-weight:700}
-  .green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}
-  .panel{background:var(--card);margin:12px auto;padding:16px;border-radius:10px;max-width:1100px;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
-  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  input,select,button{padding:8px;border-radius:8px;border:1px solid #e5e7eb;font-size:14px}
-  button{cursor:pointer;font-weight:700}
-  button.primary{background:var(--blue);color:#fff;border:none}
-  button.success{background:var(--green);color:#fff;border:none}
-  button.danger{background:var(--red);color:#fff;border:none}
-  table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}
-  th,td{padding:8px;border:1px solid #eef2f7;text-align:center}
-  th{background:#f0f9ff;color:#0b5394}
-  tbody tr:nth-child(even){background:#fbfdff}
-  .cell-paid{color:var(--green);font-weight:700}
-  .cell-missed{color:var(--red);font-weight:700}
-  .col-sudah{color:var(--blue);font-weight:700}
-  .col-belum{color:var(--red);font-weight:700}
-  .actions{display:flex;gap:6px;justify-content:center}
-  .icon-btn{background:transparent;border:none;cursor:pointer;font-size:16px}
-  .small{font-size:12px;color:var(--muted)}
-  @media(max-width:800px){.cards{flex-direction:column;align-items:center}.card{width:92%}}
-  /* dialog */
-  .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;z-index:50}
-  .dialog{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:12px;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,0.25);z-index:60;min-width:320px;display:none}
-  .dialog .row{justify-content:flex-end}
+  body {
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    text-align:center;
+    padding: 25px 10px;
+  }
+  h1 { margin:0; font-size:26px; }
+  h2 { margin-top:5px; color:#555; font-weight:500; }
+  .versi { color:#777; font-size:14px; }
+
+  /* KAD RINGKAS */
+  .cards { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; padding:10px; }
+  .card {
+    background:#fff; padding:20px; border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08); width:260px; text-align:center;
+  }
+  .green { color:#23a125; font-weight:700; font-size:22px; }
+  .red { color:#d92626; font-weight:700; font-size:22px; }
+  .blue { color:#006bff; font-weight:700; font-size:22px; }
+
+  /* PANEL BOX */
+  .panel {
+    background:#fff; padding:20px; margin:18px auto;
+    border-radius:10px; width:95%; max-width:1200px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+  }
+  input, select {
+    padding:10px; border-radius:8px; border:1px solid #ccc;
+    font-size:15px; margin-right:10px;
+  }
+  button {
+    padding:10px 16px; border:none; border-radius:8px;
+    cursor:pointer; font-weight:700; font-size:14px;
+  }
+  .btn-primary { background:#006bff; color:white; }
+  .btn-success { background:#23a125; color:white; }
+  .btn-danger { background:#d92626; color:white; }
+  .btn-grey { background:#888; color:white; }
+
+  /* JADUAL */
+  table {
+    width:100%; border-collapse:collapse; margin-top:15px; font-size:14px;
+  }
+  th,td {
+    padding:9px; border:1px solid #e2e2e2; text-align:center;
+  }
+  th { background:#eef4ff; }
+  .paid { color:#23a125; font-weight:700; }
+  .miss { color:#d92626; font-weight:700; }
+  .col-sudah { color:#006bff; font-weight:700; }
+  .col-belum { color:#d92626; font-weight:700; }
 </style>
 </head>
+
 <body>
+
 <header>
   <h1>Sistem Yuran Kelab Guru & Staf</h1>
-  <h2>Sekolah Kebangsaan Sungai Balai — Versi 1.5.0</h2>
+  <h2>Sekolah Kebangsaan Sungai Balai</h2>
+  <div class="versi">Versi 1.5.1</div>
 </header>
 
 <div class="cards">
-  <div class="card"><h3>Jumlah Kutipan</h3><p id="jumlahKutipan" class="green">RM 0.00</p></div>
-  <div class="card"><h3>Jumlah Perbelanjaan</h3><p id="jumlahBelanja" class="red">RM 0.00</p></div>
-  <div class="card"><h3>Baki</h3><p id="baki" class="blue">RM 0.00</p></div>
+  <div class="card"><h3>Jumlah Kutipan</h3><div id="jumlahKutipan" class="green">RM 0.00</div></div>
+  <div class="card"><h3>Jumlah Perbelanjaan</h3><div id="jumlahBelanja" class="red">RM 0.00</div></div>
+  <div class="card"><h3>Baki</h3><div id="baki" class="blue">RM 0.00</div></div>
 </div>
 
-<div class="panel" id="adminPanelWrap">
+<!-- PANEL ADMIN -->
+<div class="panel">
   <h2>🔐 Panel Admin</h2>
-  <div class="row" style="margin-bottom:8px">
-    <input id="adminPass" type="password" placeholder="Masukkan kata laluan admin" />
-    <button id="loginBtn" class="primary">Log Masuk</button>
-    <button id="logoutBtn" class="danger" style="display:none">Log Keluar</button>
-    <span id="loginStatus" class="small"></span>
+  <div style="display:flex; flex-wrap:wrap; align-items:center;">
+    <input type="password" id="adminPass" placeholder="Masukkan kata laluan">
+    <button class="btn-primary" id="loginBtn">Log Masuk</button>
+    <button class="btn-grey" id="logoutBtn" style="display:none;">Log Keluar</button>
+    <span id="loginStatus" style="margin-left:10px; font-weight:600;"></span>
   </div>
 
-  <div id="adminControls" style="display:none;margin-top:8px">
-    <div class="row">
-      <input id="namaAhli" type="text" placeholder="Nama Ahli" />
-      <select id="jawatanSelect"><option value="">Pilih Jawatan</option><option value="Guru">Guru</option><option value="Staf">Staf</option></select>
-      <button id="tambahBtn" class="success">Tambah Ahli</button>
-    </div>
+  <div id="adminTools" style="display:none; margin-top:18px;">
+    <h3>Tambah Ahli</h3>
+    <input id="namaAhli" placeholder="Nama Ahli">
+    <select id="jawatanAhli">
+      <option value="">Pilih Jawatan</option>
+      <option value="Guru">Guru</option>
+      <option value="Staf">Staf</option>
+    </select>
+    <button class="btn-success" id="tambahAhliBtn">Tambah Ahli</button>
 
-    <div style="margin-top:10px;border-top:1px solid #eef2f7;padding-top:8px">
-      <strong>Tambah Perbelanjaan</strong>
-      <div class="row" style="margin-top:6px">
-        <input id="belanjaTarikh" placeholder="Tarikh (YYYY-MM-DD) - optional" />
-        <input id="belanjaTujuan" placeholder="Tujuan" />
-        <input id="belanjaJumlah" placeholder="Jumlah (nombor sahaja)" />
-        <input id="belanjaCatatan" placeholder="Catatan (optional)" />
-        <button id="tambahBelanjaBtn" class="danger">Tambah</button>
-      </div>
-    </div>
-
-    <div id="adminMsg" class="small" style="margin-top:8px"></div>
+    <h3 style="margin-top:25px;">Tambah Perbelanjaan</h3>
+    <input id="tarikhBelanja" type="date">
+    <input id="tujuanBelanja" placeholder="Tujuan">
+    <input id="jumlahBelanjaBaru" placeholder="Jumlah (angka sahaja)">
+    <input id="catatanBelanja" placeholder="Catatan (pilihan)">
+    <button class="btn-danger" id="tambahBelanjaBtn">Tambah</button>
   </div>
 </div>
 
+<!-- REKOD BAYARAN AHLI -->
 <div class="panel">
   <h2>📊 Rekod Bayaran Ahli</h2>
-  <div class="small muted-note">Klik ikon ✏️ untuk edit (Nama/Jawatan). Klik 🗑️ untuk pindahkan ahli ke arkib.</div>
-  <table id="bayaranTable"></table>
+  <table id="tblBayaran"></table>
 </div>
 
+<!-- REKOD PERBELANJAAN -->
 <div class="panel">
   <h2>💰 Rekod Perbelanjaan Kelab</h2>
-  <table id="belanjaTable" class="spend-table"></table>
-</div>
-
-<div class="overlay" id="overlay"></div>
-<div class="dialog" id="editDialog" aria-hidden="true">
-  <h3 id="editTitle">Edit Ahli</h3>
-  <div style="margin-top:8px">
-    <input id="editName" placeholder="Nama" style="width:100%;margin-bottom:8px"/>
-    <select id="editJawatan" style="width:100%;margin-bottom:8px"><option value="Guru">Guru</option><option value="Staf">Staf</option></select>
-  </div>
-  <div class="row" style="margin-top:8px">
-    <button id="editCancel" class="primary" style="background:#e5e7eb;color:#111">Batal</button>
-    <button id="editSave" class="success">Simpan</button>
-  </div>
+  <table id="tblBelanja"></table>
 </div>
 
 <script>
-/* CONFIG */
+// =====================================================
+// CONFIG
+// =====================================================
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0ER_5FMqOrZxH9l82HPfGTnHsdNZw-3uIRC7BXn7hStnZRfxLcQ7Sod9zFo45Rrxq/exec";
-const ADMIN_API_KEY = "Sksb@abab023";
-const AUTO_REFRESH_INTERVAL = 20 * 1000; // 20 seconds
-const ARCHIVE_SHEET = "Ahli_Arkib";
+const ADMIN_KEY = "Sksb@abab023";
 
 let isAdmin = false;
-let latestJson = null;
-let autoRefreshTimer = null;
 
-/* helpers */
-const $ = id => document.getElementById(id);
-function setAdminMsg(msg, ok=true){ const el=$('adminMsg'); el.style.color= ok? 'var(--green)':'var(--red)'; el.textContent=msg; el.style.display='block'; }
-function clearAdminMsg(){ const el=$('adminMsg'); el.textContent=''; el.style.display='none'; }
+// =====================================================
+// LOGIN / LOGOUT
+// =====================================================
+document.getElementById("loginBtn").onclick = function(){
+  const val = document.getElementById("adminPass").value.trim();
+  if(val === ADMIN_KEY){
+    isAdmin = true;
+    document.getElementById("adminTools").style.display="block";
+    document.getElementById("logoutBtn").style.display="inline-block";
+    document.getElementById("loginStatus").innerHTML="✔ Log masuk";
+    this.style.display="none";
+  } else {
+    alert("Kata laluan salah!");
+  }
+};
 
-async function apiGet(){
-  const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
-  if(!res.ok) throw new Error('HTTP ' + res.status);
+document.getElementById("logoutBtn").onclick = function(){
+  isAdmin = false;
+  document.getElementById("adminTools").style.display="none";
+  document.getElementById("loginBtn").style.display="inline-block";
+  document.getElementById("logoutBtn").style.display="none";
+  document.getElementById("loginStatus").innerHTML="";
+};
+
+// =====================================================
+// API GET
+// =====================================================
+async function apiGet() {
+  const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
   return res.json();
 }
-async function apiPost(body){
-  const res = await fetch(SCRIPT_URL, {method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  try { return await res.json(); } catch (e) { return {}; }
+
+// =====================================================
+// RENDER DATA
+// =====================================================
+function renderSummary(d){
+  let kutip = 0, belanja = 0;
+
+  // jumlah kutipan
+  const head = d.bayaran[0];
+  const idxSudah = head.indexOf("Jumlah Sudah Bayar");
+  d.bayaran.slice(1).forEach(r => kutip += Number(r[idxSudah] || 0));
+
+  // perbelanjaan
+  d.belanja.slice(1).forEach(r => belanja += Number(r[2] || 0));
+
+  document.getElementById("jumlahKutipan").textContent = "RM " + kutip.toFixed(2);
+  document.getElementById("jumlahBelanja").textContent = "RM " + belanja.toFixed(2);
+  document.getElementById("baki").textContent = "RM " + (kutip - belanja).toFixed(2);
 }
 
-/* rendering */
-function formatRM(n){ return 'RM '+ (Number(n)||0).toFixed(2); }
+// =====================================================
+// RENDER BAYARAN
+// =====================================================
+function renderBayaran(d){
+  const tbl = document.getElementById("tblBayaran");
+  const head = d.bayaran[0];
+  let html = "<tr>";
 
-function renderSummary(json){
-  const setting = json.setting || { totalKutipan:0, totalBelanja:0, baki:0 };
-  $('jumlahKutipan').textContent = formatRM(setting.totalKutipan);
-  $('jumlahBelanja').textContent = formatRM(setting.totalBelanja);
-  $('baki').textContent = formatRM(setting.baki);
-}
+  head.forEach(h => html += "<th>"+h+"</th>");
+  html += "<th>Tindakan</th></tr>";
 
-/* bayaran table with action icons */
-function renderBayaran(json){
-  latestJson = json;
-  const tbl = $('bayaranTable');
-  tbl.innerHTML = '';
-  const b = json.bayaran || [];
-  if(!b || b.length===0){ tbl.innerHTML = '<tr><td>Tiada data.</td></tr>'; return; }
-  const header = b[0];
-  let html = '<thead><tr>';
-  header.forEach(h => html += '<th>' + h + '</th>');
-  html += '<th>Tindakan</th></tr></thead><tbody>';
-  const rows = b.slice(1);
-  rows.forEach((r, ri) => {
-    html += '<tr data-row="'+ri+'">';
-    r.forEach((c,ci) => {
-      const col = header[ci] || '';
-      if(col === 'Jumlah Sudah Bayar') html += '<td class="col-sudah">'+ (c||0) +'</td>';
-      else if(col === 'Jumlah Belum Bayar') html += '<td class="col-belum">'+ (c||0) +'</td>';
-      else if(ci>=2 && ci<=13) {
-        const val = Number(c)||0;
-        html += val>0 ? '<td class="cell-paid">✓</td>' : '<td class="cell-missed">✗</td>';
-      } else {
-        html += '<td>' + (c||'—') + '</td>';
+  d.bayaran.slice(1).forEach((r,i)=>{
+    html += "<tr>";
+    r.forEach((c,j)=>{
+
+      if(j >= 2 && j <= 13){
+        if(Number(c)>0){
+          html += `<td class='paid'>${c} ✔</td>`;
+        } else {
+          html += `<td class='miss'>— ✖</td>`;
+        }
+      }
+      else if(head[j]==="Jumlah Sudah Bayar"){
+        html += `<td class='col-sudah'>RM ${Number(c).toFixed(0)}</td>`;
+      }
+      else if(head[j]==="Jumlah Belum Bayar"){
+        html += `<td class='col-belum'>${c==0?"0":c}</td>`;
+      }
+      else {
+        html += `<td>${c}</td>`;
       }
     });
-    // actions column (edit + archive)
-    html += '<td class="actions"><button class="icon-btn" data-action="edit" title="Edit">✏️</button><button class="icon-btn" data-action="archive" title="Arkib">🗑️</button></td>';
-    html += '</tr>';
-  });
-  html += '</tbody>';
-  tbl.innerHTML = html;
 
-  // attach handlers
-  tbl.querySelectorAll('button[data-action]').forEach(btn=>{
-    btn.addEventListener('click', async (ev)=>{
-      const tr = ev.currentTarget.closest('tr');
-      const action = ev.currentTarget.getAttribute('data-action');
-      const rowIndex = Number(tr.getAttribute('data-row'));
-      if(action === 'edit') openEditDialog(rowIndex);
-      if(action === 'archive') archiveMember(rowIndex);
+    html += `
+      <td>
+        <button onclick="editAhli(${i})" style="background:none;border:none;font-size:18px;cursor:pointer;">✏️</button>
+        <button onclick="padamAhli(${i})" style="background:none;border:none;font-size:18px;cursor:pointer;">🗑️</button>
+      </td>
+    </tr>`;
+  });
+
+  tbl.innerHTML = html;
+}
+
+// =====================================================
+// RENDER PERBELANJAAN
+// =====================================================
+function renderBelanja(d){
+  const tbl = document.getElementById("tblBelanja");
+  const head = d.belanja[0];
+  let html = "<tr>";
+
+  head.forEach(h => html += "<th>"+h+"</th>");
+  html += "</tr>";
+
+  d.belanja.slice(1).forEach(r=>{
+    html += "<tr>";
+    r.forEach((c,j)=>{
+      if(j==2) html += `<td>RM ${Number(c).toFixed(2)}</td>`;
+      else html += `<td>${c}</td>`;
     });
+    html += "</tr>";
   });
-}
 
-function renderBelanja(json){
-  const tbl = $('belanjaTable');
-  tbl.innerHTML = '';
-  const b = json.belanja || [];
-  if(!b || b.length<=1){ tbl.innerHTML = '<tr><td>Tiada rekod perbelanjaan.</td></tr>'; return; }
-  let html = '<thead><tr>';
-  b[0].forEach(h => html += '<th>' + h + '</th>');
-  html += '</tr></thead><tbody>';
-  b.slice(1).forEach(r => { html += '<tr>'; r.forEach((c,ci)=> html += '<td>' + (ci===2? formatRM(c): (c||'—')) + '</td>'); html += '</tr>'; });
-  html += '</tbody>';
   tbl.innerHTML = html;
 }
 
-/* load data and render */
-async function loadAll(){
-  try{
-    const json = await apiGet();
-    latestJson = json;
-    renderSummary(json);
-    renderBayaran(json);
-    renderBelanja(json);
-    clearAdminMsg();
-  } catch(err){
-    console.error(err);
-    setAdminMsg('Gagal ambil data: ' + err.message, false);
+// =====================================================
+// TAMBAH AHLI
+// =====================================================
+document.getElementById("tambahAhliBtn").onclick = ()=>{
+
+  if(!isAdmin){ alert("Log masuk admin terlebih dahulu."); return; }
+
+  const nama = document.getElementById("namaAhli").value.trim();
+  const j = document.getElementById("jawatanAhli").value;
+
+  if(!nama || !j){
+    alert("Isi semua ruangan.");
+    return;
   }
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      action:"tambahAhli",
+      apiKey:ADMIN_KEY,
+      nama:nama,
+      jawatan:j
+    })
+  }).then(()=>{
+    alert("Ahli ditambah.");
+    muatData();
+  });
+};
+
+// =====================================================
+// TAMBAH PERBELANJAAN
+// =====================================================
+document.getElementById("tambahBelanjaBtn").onclick = ()=>{
+
+  if(!isAdmin){ alert("Perlu log masuk."); return; }
+
+  const t = document.getElementById("tarikhBelanja").value;
+  const tujuan = document.getElementById("tujuanBelanja").value.trim();
+  const jml = document.getElementById("jumlahBelanjaBaru").value.trim();
+  const cat = document.getElementById("catatanBelanja").value.trim();
+
+  if(!t || !tujuan || !jml){
+    alert("Sila lengkapkan ruangan wajib.");
+    return;
+  }
+
+  // format D/M/YYYY
+  const d = new Date(t);
+  const tarikh = d.getDate()+"/"+(d.getMonth()+1)+"/"+d.getFullYear();
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      action:"tambahBelanja",
+      apiKey:ADMIN_KEY,
+      tarikh:tarikh,
+      tujuan:tujuan,
+      jumlah:jml,
+      catatan:cat
+    })
+  }).then(()=>{ alert("Perbelanjaan ditambah."); muatData(); });
+};
+
+// =====================================================
+// EDIT AHLI
+// =====================================================
+function editAhli(i){
+  if(!isAdmin) return alert("Admin sahaja");
+
+  const namaBaru = prompt("Nama baru:");
+  if(!namaBaru) return;
+
+  const jawatanBaru = prompt("Jawatan baru (Guru/Staf):");
+  if(!jawatanBaru) return;
+
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      action:"editAhli",
+      apiKey:ADMIN_KEY,
+      index:i,
+      nama:namaBaru,
+      jawatan:jawatanBaru
+    })
+  }).then(()=>{ alert("Kemaskini berjaya."); muatData(); });
 }
 
-/* admin login/logout */
-$('loginBtn').addEventListener('click', ()=>{
-  const v = $('adminPass').value || '';
-  if(v === ADMIN_API_KEY){
-    isAdmin = true; $('adminControls').style.display='block'; $('logoutBtn').style.display='inline-block'; $('loginStatus').textContent='✅ Log masuk'; clearAdminMsg();
-  } else { isAdmin=false; setAdminMsg('Kata laluan salah', false); }
-});
-$('logoutBtn').addEventListener('click', ()=>{
-  isAdmin=false; $('adminControls').style.display='none'; $('logoutBtn').style.display='none'; $('loginStatus').textContent=''; setAdminMsg('Anda telah log keluar', true);
-});
+// =====================================================
+// PADAM → ARKIB
+// =====================================================
+function padamAhli(i){
+  if(!isAdmin) return alert("Admin sahaja");
 
-/* add member */
-$('tambahBtn').addEventListener('click', async ()=>{
-  if(!isAdmin) return alert('Sila log masuk admin');
-  const nama = $('namaAhli').value.trim(); const jawatan = $('jawatanSelect').value;
-  if(!nama||!jawatan) return alert('Sila isi nama & jawatan');
-  try{ setAdminMsg('Menghantar...', true);
-    await apiPost({ action:'tambahAhli', apiKey:ADMIN_API_KEY, nama, jawatan });
-    setAdminMsg('Ahli ditambah', true); $('namaAhli').value=''; $('jawatanSelect').value='';
-    setTimeout(loadAll, 900);
-  }catch(err){ setAdminMsg('Gagal tambah: '+err.message, false); }
-});
+  if(!confirm("Pindahkan ke arkib?")) return;
 
-/* add expense */
-$('tambahBelanjaBtn').addEventListener('click', async ()=>{
-  if(!isAdmin) return alert('Sila log masuk admin');
-  const tarikh = $('belanjaTarikh').value.trim() || new Date().toISOString();
-  const tujuan = $('belanjaTujuan').value.trim() || 'Perbelanjaan';
-  const jumlah = Number($('belanjaJumlah').value.trim()) || 0;
-  const cat = $('belanjaCatatan').value.trim() || '-';
-  if(!tujuan||jumlah<=0) return alert('Sila masukkan tujuan & jumlah (>0)');
-  try{ setAdminMsg('Menghantar...', true);
-    await apiPost({ action:'tambahBelanja', apiKey:ADMIN_API_KEY, tarikh, tujuan, jumlah, catatan:cat });
-    setAdminMsg('Perbelanjaan ditambah', true);
-    setTimeout(loadAll, 900);
-  }catch(err){ setAdminMsg('Gagal tambah belanja: '+err.message, false); }
-});
-
-/* edit dialog */
-function openEditDialog(rowIndex){
-  if(!isAdmin) return alert('Sila log masuk admin');
-  const row = latestJson.bayaran[1+rowIndex];
-  if(!row) return alert('Baris tidak ditemui');
-  $('editName').value = row[0] || '';
-  $('editJawatan').value = row[1] || 'Guru';
-  $('overlay').style.display='block'; $('editDialog').style.display='block'; $('editDialog').setAttribute('aria-hidden','false');
-  $('editSave').dataset.row = rowIndex;
-}
-$('editCancel').addEventListener('click', ()=>{ $('overlay').style.display='none'; $('editDialog').style.display='none'; $('editDialog').setAttribute('aria-hidden','true'); });
-$('editSave').addEventListener('click', async ()=>{
-  const rowIndex = Number($('editSave').dataset.row);
-  const newName = $('editName').value.trim();
-  const newJawatan = $('editJawatan').value;
-  if(!newName) return alert('Nama diperlukan');
-  try{
-    await apiPost({ action:'editAhli', apiKey:ADMIN_API_KEY, rowIndex, nama:newName, jawatan:newJawatan });
-    $('overlay').style.display='none'; $('editDialog').style.display='none'; $('editDialog').setAttribute('aria-hidden','true');
-    setAdminMsg('Ahli dikemaskini', true); setTimeout(loadAll, 900);
-  }catch(err){ setAdminMsg('Gagal edit: '+err.message, false); }
-});
-
-/* archive (move to Ahli_Arkib) */
-async function archiveMember(rowIndex){
-  if(!isAdmin) return alert('Sila log masuk admin');
-  if(!confirm('Pindahkan ahli ke arkib?')) return;
-  try{
-    await apiPost({ action:'padamAhli', apiKey:ADMIN_API_KEY, rowIndex, arkibSheet: ARCHIVE_SHEET });
-    setAdminMsg('Ahli dipindah ke arkib', true);
-    setTimeout(loadAll, 900);
-  }catch(err){ setAdminMsg('Gagal arkib: '+err.message, false); }
+  fetch(SCRIPT_URL,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      action:"arkibAhli",
+      apiKey:ADMIN_KEY,
+      index:i
+    })
+  }).then(()=>{ alert("Dipindah ke arkib."); muatData(); });
 }
 
-/* update payment cell - handled elsewhere (not changed) */
-
-/* auto refresh */
-function startAutoRefresh(){
-  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
-  autoRefreshTimer = setInterval(()=>{ loadAll(); }, AUTO_REFRESH_INTERVAL);
+// =====================================================
+// MUAT DATA + AUTO REFRESH 20s
+// =====================================================
+async function muatData(){
+  const d = await apiGet();
+  renderSummary(d);
+  renderBayaran(d);
+  renderBelanja(d);
 }
-startAutoRefresh();
 
-/* initial load */
-loadAll();
+muatData();
+setInterval(muatData, 20000);
 
 </script>
+
 </body>
 </html>
