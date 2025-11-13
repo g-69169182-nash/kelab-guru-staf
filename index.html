@@ -3,77 +3,83 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sistem Yuran Kelab Guru &amp; Staf — v2.0</title>
+  <title>Sistem Yuran Kelab Guru &amp; Staf — v2.2</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="site-header">
     <div class="container">
       <h1>Sistem Yuran Kelab Guru &amp; Staf</h1>
-      <p class="subtitle">Sekolah Kebangsaan Sungai Balai — <span id="versi">versi 2.0</span></p>
+      <p class="subtitle">Sekolah Kebangsaan Sungai Balai — <span id="versi">v2.2</span></p>
     </div>
   </header>
 
   <main class="container">
-    <section class="cards" aria-hidden="false">
+    <!-- Summary cards -->
+    <section class="cards">
       <div class="card">
         <div class="card-title">Jumlah Kutipan</div>
-        <div class="card-value green" id="jumlahKutipan">RM 0.00</div>
+        <div class="card-value green" id="sumKutipan">RM 0.00</div>
       </div>
       <div class="card">
         <div class="card-title">Jumlah Perbelanjaan</div>
-        <div class="card-value red" id="jumlahBelanja">RM 0.00</div>
+        <div class="card-value red" id="sumBelanja">RM 0.00</div>
       </div>
       <div class="card">
         <div class="card-title">Baki</div>
-        <div class="card-value blue" id="baki">RM 0.00</div>
+        <div class="card-value blue" id="sumBaki">RM 0.00</div>
       </div>
     </section>
 
+    <!-- Admin panel -->
     <section class="panel" id="adminPanel">
       <h2>🔐 Panel Admin</h2>
 
       <div class="row">
-        <input id="adminPass" type="password" placeholder="Masukkan kata laluan" />
+        <input id="adminPass" type="password" placeholder="Kata laluan admin" />
         <button id="loginBtn" class="btn primary">Log Masuk</button>
         <button id="logoutBtn" class="btn danger" style="display:none">Log Keluar</button>
-        <label id="loginNotice" class="login-notice" aria-live="polite"></label>
+        <span id="loginNotice" class="login-notice" aria-live="polite"></span>
       </div>
 
-      <div id="adminControls" style="display:none;margin-top:12px">
+      <div id="adminControls" style="display:none; margin-top:12px;">
+        <h3>Tambah Ahli</h3>
         <div class="row">
-          <input id="namaAhli" type="text" placeholder="Nama Ahli" />
-          <select id="jawatanSelect">
+          <input id="namaBaru" type="text" placeholder="Nama">
+          <select id="jawatanBaru">
             <option value="">Pilih Jawatan</option>
             <option value="Guru">Guru</option>
             <option value="Staf">Staf</option>
           </select>
-          <button id="tambahBtn" class="btn success">Tambah Ahli</button>
+          <button id="btnTambah" class="btn success">Tambah</button>
         </div>
 
-        <hr/>
+        <hr>
 
         <h3>Tambah Perbelanjaan</h3>
         <div class="row">
-          <input id="belanjaTarikh" type="text" placeholder="Tarikh (D/M/YYYY) - pilih atau taip" />
-          <input id="belanjaTujuan" type="text" placeholder="Tujuan" />
-          <input id="belanjaJumlah" type="text" placeholder="Jumlah (nombor sahaja)" />
-          <input id="belanjaCatatan" type="text" placeholder="Catatan (optional)" />
-          <button id="tambahBelanjaBtn" class="btn danger">Tambah Belanja</button>
+          <input id="tarikhBelanja" type="date" aria-label="Tarikh Belanja">
+          <input id="tujuanBelanja" type="text" placeholder="Tujuan">
+          <input id="jumlahBelanja" type="number" placeholder="Jumlah (angka sahaja)">
+          <input id="catatanBelanja" type="text" placeholder="Catatan (optional)">
+          <button id="btnTambahBelanja" class="btn danger">Tambah Belanja</button>
         </div>
+        <p id="adminMsg" class="muted" style="margin-top:8px;"></p>
       </div>
     </section>
 
+    <!-- Bayaran table -->
     <section class="panel">
       <h2>📊 Rekod Bayaran Ahli</h2>
-      <p class="muted">Klik ikon ✏️ untuk edit nama/jawatan; ikon 🗑️ untuk arkib. Klik tanda ❌/✅ pada bulan untuk kemaskini (admin sahaja).</p>
+      <p class="muted">(Admin boleh edit / arkib / kemaskini bulan. Pengunjung hanya baca.)</p>
       <div class="table-wrap">
         <table id="bayaranTable" role="table" aria-label="Rekod Bayaran"></table>
       </div>
     </section>
 
+    <!-- Belanja table -->
     <section class="panel">
-      <h2>💰 Rekod Perbelanjaan Kelab</h2>
+      <h2>💰 Rekod Perbelanjaan</h2>
       <div class="table-wrap">
         <table id="belanjaTable" role="table" aria-label="Rekod Perbelanjaan"></table>
       </div>

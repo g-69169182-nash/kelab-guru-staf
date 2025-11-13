@@ -1,350 +1,314 @@
-/* script.js v2.0
-   Frontend untuk Sistem Yuran Kelab Guru & Staf
-   - Masukkan SCRIPT_URL di bawah (anda sudah berikan)
-   - Pastikan Apps Script menerima POST dengan body JSON { action, apiKey, ... }
+/* script.js (v2.2) - use with Apps Script v2.2
+   Ensure SCRIPT_URL below matches your deployed Apps Script Web App URL.
 */
 
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySCWOoyk8WVs7ktDRWFoe6-KZ1WlpjbIRtFwE-xcoWNSiIMWatBiJMqUr2ns_oCGoQ/exec";
-const ADMIN_KEY = "Sksb@abab023"; // jika Apps Script pakai kunci lain, tukar sini
+const ADMIN_KEY = "Sksb@abab023";
 
-// UI refs
+// Elements
+const apiUrlEl = document.getElementById('apiUrl');
+apiUrlEl.textContent = SCRIPT_URL;
+
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const adminPass = document.getElementById('adminPass');
 const adminControls = document.getElementById('adminControls');
 const loginNotice = document.getElementById('loginNotice');
 
-const tambahBtn = document.getElementById('tambahBtn');
-const namaAhli = document.getElementById('namaAhli');
-const jawatanSelect = document.getElementById('jawatanSelect');
+const btnTambah = document.getElementById('btnTambah');
+const namaBaru = document.getElementById('namaBaru');
+const jawatanBaru = document.getElementById('jawatanBaru');
 
-const tambahBelanjaBtn = document.getElementById('tambahBelanjaBtn');
-const belanjaTarikh = document.getElementById('belanjaTarikh');
-const belanjaTujuan = document.getElementById('belanjaTujuan');
-const belanjaJumlah = document.getElementById('belanjaJumlah');
-const belanjaCatatan = document.getElementById('belanjaCatatan');
+const btnTambahBelanja = document.getElementById('btnTambahBelanja');
+const tarikhBelanja = document.getElementById('tarikhBelanja');
+const tujuanBelanja = document.getElementById('tujuanBelanja');
+const jumlahBelanja = document.getElementById('jumlahBelanja');
+const catatanBelanja = document.getElementById('catatanBelanja');
 
-const jumlahKutipanEl = document.getElementById('jumlahKutipan');
-const jumlahBelanjaEl = document.getElementById('jumlahBelanja');
-const bakiEl = document.getElementById('baki');
+const sumKutipanEl = document.getElementById('sumKutipan');
+const sumBelanjaEl = document.getElementById('sumBelanja');
+const sumBakiEl = document.getElementById('sumBaki');
 
 const bayaranTable = document.getElementById('bayaranTable');
 const belanjaTable = document.getElementById('belanjaTable');
-const apiUrlEl = document.getElementById('apiUrl');
-apiUrlEl.textContent = SCRIPT_URL;
 
 let isAdmin = false;
-let cachedData = null;
+let cached = null;
 
-// ----- helpers -----
-function fmtRM(n){
-  if(n===null||n===undefined||n==='') return "—";
-  const num = Number(n) || 0;
-  return "RM " + num.toFixed(2);
-}
-function safeText(t){ return (t===null||t===undefined||t==="") ? "—" : String(t); }
+// helpers
+function RM(n){ return "RM " + (Number(n)||0).toFixed(2); }
+function safe(v){ return v===null||v===undefined||v==='' ? '—' : v; }
 
 async function apiGet(){
-  const res = await fetch(SCRIPT_URL + "?t=" + Date.now());
-  if(!res.ok) throw new Error("Server returned " + res.status);
-  return res.json();
+  const r = await fetch(SCRIPT_URL + "?t=" + Date.now());
+  if(!r.ok) throw new Error('Server ' + r.status);
+  return r.json();
 }
 
-async function apiPost(body){
-  // Apps Script must support CORS; if not, use mode:'no-cors' (but no response)
-  const res = await fetch(SCRIPT_URL, {
-    method: "POST",
-    headers: {'Content-Type':'application/json'},
-    mode: 'cors',
-    body: JSON.stringify(body)
+async function apiPost(payload){
+  const r = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
   });
-  if(!res.ok) {
-    let txt = await res.text().catch(()=>res.statusText);
-    throw new Error('Server ' + res.status + ' - ' + txt);
+  if(!r.ok){
+    const txt = await r.text().catch(()=>r.statusText);
+    throw new Error('Server ' + r.status + ' - ' + txt);
   }
-  return res.json().catch(()=>({status:'ok'}));
+  return r.json();
 }
 
-// ----- render summary -----
+// render summary
 function renderSummary(json){
   const header = json.bayaran?.[0] || [];
   const rows = json.bayaran?.slice(1) || [];
   const idxSudah = header.indexOf("Jumlah Sudah Bayar");
-  const idxBelum = header.indexOf("Jumlah Belum Bayar");
-  let sumSudah=0, sumBelum=0;
-  if(idxSudah>=0){
-    rows.forEach(r=>{ sumSudah += Number(r[idxSudah])||0; });
+  let totalSudah = 0;
+  rows.forEach(r=> totalSudah += Number(r[idxSudah])||0);
+
+  let totalBelanja = 0;
+  if(Array.isArray(json.belanja)){
+    json.belanja.slice(1).forEach(r=> totalBelanja += Number(r[2])||0);
   }
-  if(idxBelum>=0){
-    rows.forEach(r=>{ sumBelum += Number(r[idxBelum])||0; });
-  }
-  // fallback sum perbelanjaan
-  let sumBelanja=0;
-  if(Array.isArray(json.belanja) && json.belanja.length>1){
-    json.belanja.slice(1).forEach(r=>{ sumBelanja += Number(r[2])||0; });
-  }
-  jumlahKutipanEl.textContent = "RM " + sumSudah.toFixed(2);
-  jumlahBelanjaEl.textContent = "RM " + sumBelanja.toFixed(2);
-  bakiEl.textContent = "RM " + (sumSudah - sumBelanja).toFixed(2);
+
+  sumKutipanEl.textContent = RM(totalSudah);
+  sumBelanjaEl.textContent = RM(totalBelanja);
+  sumBakiEl.textContent = RM(totalSudah - totalBelanja);
 }
 
-// ----- build bayaran table -----
+// render bayaran table (Tindakan only if admin)
 function renderBayaran(json){
   const header = json.bayaran?.[0] || [];
   const rows = json.bayaran?.slice(1) || [];
 
-  // header row
-  const ths = header.map(h=>`<th>${h}</th>`).join('');
-  // add tindakan header
-  const head = `<thead><tr>${ths}<th>Tindakan</th></tr></thead>`;
+  let ths = header.map(h => `<th>${h}</th>`).join('');
+  if(isAdmin) ths += '<th>Tindakan</th>';
+  const head = `<thead><tr>${ths}</tr></thead>`;
 
-  // body rows
-  const bodyRows = rows.map((r,ri)=>{
-    const cells = r.map((c,ci)=>{
-      const colName = header[ci] || '';
-      // numeric monthly columns are at index 2..13
-      if(ci>=2 && ci<=13){
+  let body = rows.map((r,ri) => {
+    let cols = r.map((c,ci) => {
+      // monthly columns index 2..13 (0-based)
+      if(ci >= 2 && ci <= 13){
         const val = Number(c) || 0;
-        if(val>0){
-          return `<td class="cell-paid">${val} <span aria-hidden>✅</span></td>`;
-        } else {
-          return `<td class="cell-missed">— <span aria-hidden>❌</span></td>`;
-        }
+        return val > 0 ? `<td class="cell-paid">${val} ✅</td>` : `<td class="cell-missed">— ❌</td>`;
       }
-      if(colName === 'Jumlah Sudah Bayar'){
-        return `<td class="col-sudah">${(c===0 || c===''? '—' : 'RM ' + Number(c).toFixed(0))}</td>`;
-      }
-      if(colName === 'Jumlah Belum Bayar'){
-        return `<td class="col-belum">${(c===0 || c===''? '—' : Number(c))}</td>`;
-      }
-      // default (name, jawatan)
-      return `<td>${safeText(c)}</td>`;
+      if(header[ci] === 'Jumlah Sudah Bayar') return `<td class="col-sudah">${safe(c)}</td>`;
+      if(header[ci] === 'Jumlah Belum Bayar') return `<td class="col-belum">${safe(c)}</td>`;
+      return `<td>${safe(c)}</td>`;
     }).join('');
 
-    // tindakan icons (edit, delete)
-    const name = r[0] || '';
-    const tindakan = `<td>
-      <button class="small-icon" title="Edit" data-action="edit" data-row="${ri}">✏️</button>
-      <button class="small-icon" title="Arkib" data-action="del" data-row="${ri}">🗑️</button>
-    </td>`;
+    if(isAdmin){
+      // edit & arkib icons
+      cols += `<td>
+        <button class="small-icon" data-act="edit" data-row="${ri}" title="Edit">✏️</button>
+        <button class="small-icon" data-act="arkib" data-row="${ri}" title="Arkib">🗑️</button>
+      </td>`;
+    }
 
-    return `<tr data-row="${ri}">${cells}${tindakan}</tr>`;
+    return `<tr data-row="${ri}">${cols}</tr>`;
   }).join('');
 
-  bayaranTable.innerHTML = head + "<tbody>" + bodyRows + "</tbody>";
+  bayaranTable.innerHTML = head + "<tbody>" + body + "</tbody>";
 
-  // attach handlers for tindakan and month toggles
-  // tindakan
-  bayaranTable.querySelectorAll('button.small-icon').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
-      const action = btn.dataset.action;
-      const rowIndex = Number(btn.dataset.row);
-      if(action === 'edit') return handleEditMember(rowIndex);
-      if(action === 'del') return handleDeleteMember(rowIndex);
+  // attach handlers for tindakan and monthly clicks
+  if(isAdmin){
+    bayaranTable.querySelectorAll('button.small-icon').forEach(b=>{
+      b.addEventListener('click', async (ev)=>{
+        const act = b.dataset.act;
+        const idx = Number(b.dataset.row);
+        if(act === 'edit') return editMember(idx);
+        if(act === 'arkib') return arkibMember(idx);
+      });
     });
-  });
+  }
 
-  // month cells - use event delegation: clicking a monthly cell toggles (admin only)
-  bayaranTable.querySelectorAll('tbody tr').forEach(tr=>{
-    tr.querySelectorAll('td').forEach((td,ci)=>{
-      // monthly columns positions are 2..13 (0 based indexing of header)
-      if(ci>=2 && ci<=13){
-        td.style.cursor = 'pointer';
-        td.addEventListener('click', ()=>handleToggleMonth(tr, ci));
+  // monthly cell toggle (admin only)
+  bayaranTable.querySelectorAll('tbody tr').forEach((tr)=>{
+    const cells = Array.from(tr.querySelectorAll('td'));
+    // monthly cells are header indexes 2..13 => td positions 2..13
+    cells.forEach((td, ci) => {
+      if(ci >= 2 && ci <= 13){
+        td.style.cursor = isAdmin ? 'pointer' : 'default';
+        td.onclick = async ()=> {
+          if(!isAdmin){ alert('Hanya admin boleh kemaskini.'); return; }
+          await toggleMonth(tr, ci);
+        };
       }
     });
   });
 }
 
-// ----- build belanja table -----
+// render belanja table
 function renderBelanja(json){
-  if(!Array.isArray(json.belanja) || json.belanja.length<=1){
+  if(!Array.isArray(json.belanja) || json.belanja.length <= 1){
     belanjaTable.innerHTML = "<tr><td>Tiada rekod perbelanjaan.</td></tr>";
     return;
   }
   const header = json.belanja[0];
-  const ths = header.map(h=>`<th>${h}</th>`).join('');
-  const rows = json.belanja.slice(1).map((r,ri)=>{
-    const tds = r.map((c,ci)=>{
-      if(ci===2) return `<td>${fmtRM(c)}</td>`;
-      return `<td>${safeText(c)}</td>`;
-    }).join('');
-    // add delete button for admin
-    return `<tr data-row="${ri}">${tds}<td>${isAdmin? `<button class="small-icon" data-action="delBel" data-row="${ri}">🗑️</button>` : ''}</td></tr>`;
+  const head = "<thead><tr>" + header.map(h=>`<th>${h}</th>`).join('') + (isAdmin? '<th>Tindakan</th>':'') + "</tr></thead>";
+
+  const body = json.belanja.slice(1).map((r,ri) => {
+    const tds = `<td>${safe(r[0])}</td><td>${safe(r[1])}</td><td>${RM(r[2])}</td><td>${safe(r[3])}</td>`;
+    const act = isAdmin ? `<td><button class="small-icon" data-act="delb" data-row="${ri}">🗑️</button></td>` : '';
+    return `<tr data-row="${ri}">${tds}${act}</tr>`;
   }).join('');
-  belanjaTable.innerHTML = `<thead><tr>${ths}<th>Tindakan</th></tr></thead><tbody>${rows}</tbody>`;
 
-  // attach delete handlers if admin
-  belanjaTable.querySelectorAll('button.small-icon').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const idx = Number(btn.dataset.row);
-      const rec = json.belanja[idx+1];
-      if(!rec) return alert('record not found');
-      if(!confirm(`Padam perbelanjaan: ${rec[1]} (${rec[2]}) ?`)) return;
-      try{
-        await apiPost({action:'hapusBelanja', apiKey:ADMIN_KEY, index: idx});
-        await refresh();
-      }catch(err){ alert('Gagal padam perbelanjaan: '+err.message); }
+  belanjaTable.innerHTML = head + "<tbody>" + body + "</tbody>";
+
+  // attach delete handlers for belanja if admin
+  if(isAdmin){
+    belanjaTable.querySelectorAll('button.small-icon').forEach(b=>{
+      b.addEventListener('click', async ()=>{
+        const idx = Number(b.dataset.row);
+        if(!confirm('Padam perbelanjaan ini?')) return;
+        try{
+          await apiPost({ action:'hapusBelanja', apiKey:ADMIN_KEY, index: idx });
+          await refresh();
+        }catch(err){ alert('Gagal padam: ' + err.message); }
+      });
     });
-  });
-}
-
-// ----- user actions -----
-async function handleToggleMonth(tr, colIndex){
-  if(!isAdmin){ alert('Hanya admin boleh kemaskini.'); return; }
-  // find row index:
-  const rowIndex = Number(tr.dataset.row);
-  const json = cachedData;
-  if(!json) return;
-  const header = json.bayaran[0];
-  const rows = json.bayaran.slice(1);
-  const targetRow = rows[rowIndex];
-  if(!targetRow) return;
-
-  // which month name
-  const monthName = header[colIndex]; // e.g. "Jan"
-  // current value
-  const cur = Number(targetRow[colIndex]) || 0;
-  // ask amount to set (defaults: take tetapan)
-  const jawatan = targetRow[1] || '';
-  // get default amounts from tetapan
-  let defaultGuru = 0, defaultStaf = 0;
-  if(Array.isArray(json.tetapan) && json.tetapan[1]){
-    defaultGuru = Number(json.tetapan[1][2])||0;
-    defaultStaf = Number(json.tetapan[1][3])||0;
-  }
-  const suggested = (jawatan === 'Guru')? defaultGuru : defaultStaf;
-  let val = null;
-  if(cur>0){
-    if(!confirm('Catatan: nilai sedia ada akan dibuang (tandakan belum bayar). Teruskan?')) return;
-    val = 0;
-  } else {
-    // prompt for amount (user can change)
-    let input = prompt(`Pilihan jumlah (cadangan ${suggested}):`, String(suggested||''));
-    if(input===null) return; // cancel
-    input = input.trim();
-    if(input === '') return alert('Sila masukkan nombor');
-    if(isNaN(Number(input))) return alert('Sila masukkan nombor sahaja');
-    val = Number(input);
-  }
-
-  // send to server
-  try{
-    await apiPost({ action:'toggleMonth', apiKey:ADMIN_KEY, row: rowIndex, colIndex, value: val });
-    await refresh();
-  }catch(err){
-    alert('Gagal kemaskini: ' + err.message);
   }
 }
 
-async function handleEditMember(rowIndex){
-  if(!isAdmin){ alert('Hanya admin boleh edit.'); return; }
-  const json = cachedData;
-  if(!json) return;
-  const rows = json.bayaran.slice(1);
-  const r = rows[rowIndex];
-  if(!r) return;
-  const newName = prompt('Nama baru:', r[0] || '');
-  if(newName === null) return;
-  const newJaw = prompt('Jawatan (Guru/Staf):', r[1] || '');
-  if(newJaw === null) return;
-  if(!newName.trim() || !newJaw.trim()) return alert('Nama/jawatan diperlukan');
-  try{
-    await apiPost({ action:'editAhli', apiKey:ADMIN_KEY, row: rowIndex, nama: newName.trim(), jawatan: newJaw.trim() });
-    await refresh();
-  }catch(err){ alert('Gagal edit: '+err.message); }
-}
-
-async function handleDeleteMember(rowIndex){
-  if(!isAdmin){ alert('Hanya admin boleh memadam.'); return; }
-  const json = cachedData;
-  const rows = json.bayaran.slice(1);
-  const r = rows[rowIndex];
-  if(!r) return;
-  if(!confirm(`Arkibkan ahli ${r[0]}? (rekod tidak dipadam terus, bergantung Apps Script)`)) return;
-  try{
-    await apiPost({ action:'hapusAhli', apiKey:ADMIN_KEY, row: rowIndex });
-    await refresh();
-  }catch(err){ alert('Gagal padam: '+err.message); }
-}
-
-// tambah ahli
-async function tambahAhli(){
-  if(!isAdmin){ alert('Sila log masuk admin'); return; }
-  const nama = namaAhli.value.trim();
-  const jaw = jawatanSelect.value;
-  if(!nama || !jaw) return alert('Sila isi nama dan jawatan');
-  try{
-    await apiPost({ action:'tambahAhli', apiKey:ADMIN_KEY, nama, jawatan:jaw });
-    namaAhli.value=''; jawatanSelect.value='';
-    await refresh();
-  }catch(err){ alert('Gagal tambah ahli: '+err.message); }
-}
-
-// tambah belanja
-async function tambahBelanja(){
-  if(!isAdmin){ alert('Sila log masuk admin'); return; }
-  const t = belanjaTarikh.value.trim();
-  const tu = belanjaTujuan.value.trim();
-  const j = belanjaJumlah.value.trim();
-  const cat = belanjaCatatan.value.trim();
-  if(!tu || !j) return alert('Sila isi tujuan dan jumlah');
-  if(isNaN(Number(j))) return alert('Jumlah mesti nombor');
-  try{
-    await apiPost({ action:'tambahBelanja', apiKey:ADMIN_KEY, tarikh: t, tujuan: tu, jumlah: Number(j), catatan: cat });
-    belanjaTarikh.value=''; belanjaTujuan.value=''; belanjaJumlah.value=''; belanjaCatatan.value='';
-    await refresh();
-  }catch(err){ alert('Gagal tambah perbelanjaan: '+err.message); }
-}
-
-// login/logout
-function setLoggedIn(flag){
-  isAdmin = !!flag;
-  adminControls.style.display = flag ? 'block' : 'none';
-  logoutBtn.style.display = flag ? 'inline-block' : 'none';
-  loginBtn.style.display = flag ? 'none' : 'inline-block';
-  loginNotice.textContent = flag ? '✅ Log masuk' : '';
-}
-
-// refresh data
+// actions
 async function refresh(){
   try{
-    const json = await apiGet();
-    cachedData = json;
-    renderSummary(json);
-    renderBayaran(json);
-    renderBelanja(json);
-    // optional: show version if sent by API
-    if(json?.version) document.getElementById('versi').textContent = 'versi ' + json.version;
+    const data = await apiGet();
+    cached = data;
+    renderSummary(data);
+    renderBayaran(data);
+    renderBelanja(data);
+    // update version if provided
+    if(data.version) document.getElementById('versi').textContent = 'v' + data.version;
   }catch(err){
     console.error(err);
     alert('Gagal muat data: ' + err.message);
   }
 }
 
-// attach listeners
-loginBtn.addEventListener('click', ()=>{
-  const val = adminPass.value || '';
-  if(val === ADMIN_KEY){
-    setLoggedIn(true);
-    loginNotice.textContent = '✅ Log masuk berjaya';
+async function addMember(){
+  if(!isAdmin) return alert('Log masuk admin dahulu.');
+  const nama = namaBaru.value.trim();
+  const jaw = jawatanBaru.value;
+  if(!nama || !jaw) return alert('Sila isi nama & jawatan.');
+  try{
+    await apiPost({ action:'tambahAhli', apiKey:ADMIN_KEY, nama, jawatan: jaw });
+    namaBaru.value=''; jawatanBaru.value='';
+    await refresh();
+    alert('Ahli ditambah.');
+  }catch(err){ alert('Gagal tambah: '+err.message); }
+}
+
+async function addBelanja(){
+  if(!isAdmin) return alert('Log masuk admin dahulu.');
+  const t = tarikhBelanja.value; // yyyy-mm-dd
+  const tujuan = tujuanBelanja.value.trim();
+  const jumlah = jumlahBelanja.value;
+  const cat = catatanBelanja.value.trim();
+  if(!tujuan || !jumlah) return alert('Sila isi tujuan & jumlah.');
+  // format date to D/M/YYYY if date chosen
+  let tarikh = t;
+  if(t){
+    const d = new Date(t);
+    tarikh = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+  }
+  try{
+    await apiPost({ action:'tambahBelanja', apiKey:ADMIN_KEY, tarikh, tujuan, jumlah: Number(jumlah), catatan: cat });
+    tarikhBelanja.value=''; tujuanBelanja.value=''; jumlahBelanja.value=''; catatanBelanja.value='';
+    await refresh();
+    alert('Perbelanjaan ditambah.');
+  }catch(err){ alert('Gagal tambah belanja: '+err.message); }
+}
+
+async function editMember(idx){
+  if(!isAdmin) return alert('Admin sahaja.');
+  const r = cached?.bayaran?.[idx+1];
+  if(!r) return alert('Rekod tidak dijumpai.');
+  const nama = prompt('Nama baru:', r[0] || '');
+  if(nama === null) return;
+  const jaw = prompt('Jawatan (Guru/Staf):', r[1] || '');
+  if(jaw === null) return;
+  if(!nama.trim() || !jaw.trim()) return alert('Nama & jawatan diperlukan.');
+  try{
+    await apiPost({ action:'editAhli', apiKey:ADMIN_KEY, row: idx, nama: nama.trim(), jawatan: jaw.trim() });
+    await refresh();
+  }catch(err){ alert('Gagal edit: '+err.message); }
+}
+
+async function arkibMember(idx){
+  if(!isAdmin) return alert('Admin sahaja.');
+  const r = cached?.bayaran?.[idx+1];
+  if(!r) return alert('Rekod tidak dijumpai.');
+  if(!confirm(`Arkibkan ahli ${r[0]}?`)) return;
+  try{
+    await apiPost({ action:'arkibAhli', apiKey:ADMIN_KEY, row: idx });
+    await refresh();
+  }catch(err){ alert('Gagal arkib: '+err.message); }
+}
+
+// toggle month cell (ci is td index in row, 0-based)
+async function toggleMonth(tr, ci){
+  if(!isAdmin) { alert('Admin sahaja.'); return; }
+  const rowIndex = Number(tr.dataset.row);
+  const header = cached?.bayaran?.[0] || [];
+  const currentRow = cached?.bayaran?.[rowIndex+1] || [];
+  const curVal = Number(currentRow[ci]) || 0;
+
+  // determine suggested value from tetapan if available
+  let suger = 0;
+  if(Array.isArray(cached?.tetapan) && cached.tetapan.length > 1){
+    const last = cached.tetapan[cached.tetapan.length - 1];
+    suger = (currentRow[1] === 'Guru') ? Number(last[2]||0) : Number(last[3]||0);
   } else {
-    setLoggedIn(false);
+    suger = currentRow[1] === 'Guru' ? 20 : 10;
+  }
+
+  if(curVal > 0){
+    if(!confirm('Nilai sedia ada akan dibuang (tandakan belum bayar). Seterusnya?')) return;
+    try{
+      await apiPost({ action:'toggleMonth', apiKey:ADMIN_KEY, row: rowIndex, colIndex: ci, value: 0 });
+      await refresh();
+    }catch(err){ alert('Gagal: '+err.message); }
+  } else {
+    let input = prompt(`Masukkan jumlah untuk ${header[ci]} (cadangan ${suger}):`, String(suger||''));
+    if(input === null) return;
+    input = input.trim();
+    if(input === '' || isNaN(Number(input))) return alert('Sila masukkan nombor.');
+    try{
+      await apiPost({ action:'toggleMonth', apiKey:ADMIN_KEY, row: rowIndex, colIndex: ci, value: Number(input) });
+      await refresh();
+    }catch(err){ alert('Gagal: '+err.message); }
+  }
+}
+
+// login/out
+loginBtn.addEventListener('click', ()=>{
+  const v = adminPass.value || '';
+  if(v === ADMIN_KEY){
+    isAdmin = true;
+    adminControls.style.display = 'block';
+    logoutBtn.style.display = 'inline-block';
+    loginBtn.style.display = 'none';
+    loginNotice.textContent = '✅ Log masuk berjaya';
+    refresh();
+  } else {
+    alert('Kata laluan salah');
     loginNotice.textContent = '❌ Kata laluan salah';
   }
 });
 logoutBtn.addEventListener('click', ()=>{
-  setLoggedIn(false);
-  adminPass.value='';
+  isAdmin = false;
+  adminControls.style.display = 'none';
+  logoutBtn.style.display = 'none';
+  loginBtn.style.display = 'inline-block';
+  adminPass.value = '';
   loginNotice.textContent = '';
+  refresh();
 });
 
-// add handlers
-tambahBtn.addEventListener('click', tambahAhli);
-tambahBelanjaBtn.addEventListener('click', tambahBelanja);
+btnTambah.addEventListener('click', addMember);
+btnTambahBelanja.addEventListener('click', addBelanja);
 
-// initial load
+// initial load + auto refresh every 20s
 refresh();
-
-// Auto-refresh every 20s (can change if mahu)
 setInterval(()=>{ refresh(); }, 20000);

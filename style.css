@@ -17,7 +17,7 @@ html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, Arial, san
 
 .panel{background:var(--card);margin:18px 0;padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-input[type="text"], input[type="password"], select{
+input[type="text"], input[type="password"], input[type="number"], select, input[type="date"]{
   padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;min-width:160px;
 }
 .btn{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
