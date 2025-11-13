@@ -1,400 +1,91 @@
 <!doctype html>
 <html lang="ms">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Sistem Yuran Kelab Guru &amp; Staf — v2.2</title>
-
-<style>
-  :root{
-    --bg:#f5f8fb; --card:#fff; --muted:#6b7280;
-    --green:#16a34a; --red:#e11d48; --blue:#0b69ff;
-  }
-  body{
-    margin:0;background:var(--bg);font-family:Inter,Arial,sans-serif;color:#1f2937;
-  }
-  header{text-align:center;padding:28px 20px}
-  header h1{margin:0;font-size:28px;color:#0f172a}
-  header h2{margin:4px 0 0;color:var(--muted)}
-  .versi{text-align:center;color:var(--muted);margin-top:4px}
-
-  .cards{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;padding:10px}
-  .card{
-    background:#fff;border-radius:12px;padding:18px 20px;width:260px;
-    box-shadow:0 6px 18px rgba(0,0,0,0.05);text-align:center
-  }
-  .card h3{margin:0;color:var(--muted)}
-  .card p{margin:10px 0 0;font-size:22px;font-weight:700}
-  .green{color:var(--green)}
-  .red{color:var(--red)}
-  .blue{color:var(--blue)}
-
-  .panel{
-    background:#fff;border-radius:12px;padding:20px;max-width:1200px;
-    margin:16px auto;box-shadow:0 4px 14px rgba(0,0,0,0.05)
-  }
-  h2{margin:0 0 12px}
-
-  input,select{
-    padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;
-  }
-  button{
-    padding:10px 14px;border:none;border-radius:8px;font-weight:600;cursor:pointer
-  }
-  .primary{background:var(--blue);color:#fff}
-  .danger{background:var(--red);color:#fff}
-  .success{background:var(--green);color:#fff}
-  .small{padding:4px 6px;font-size:13px}
-
-  table{border-collapse:collapse;width:100%;margin-top:12px;font-size:14px}
-  th,td{border:1px solid #e2e8f0;padding:8px;text-align:center}
-  th{background:#eef6ff;color:#0b4a73;font-weight:600}
-
-  .cell-paid{color:var(--green);font-weight:600}
-  .cell-missed{color:var(--red);font-weight:600}
-  .col-sudah{color:var(--blue);font-weight:700}
-  .col-belum{color:var(--red);font-weight:700}
-  .ico-btn{cursor:pointer;font-size:18px;padding:4px}
-
-  /* Modal */
-  .modal-bg{
-    position:fixed;left:0;top:0;width:100%;height:100%;
-    background:rgba(0,0,0,0.45);display:none;
-    align-items:center;justify-content:center;
-  }
-  .modal{
-    background:#fff;border-radius:12px;padding:20px;width:320px;
-    box-shadow:0 6px 20px rgba(0,0,0,0.15)
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistem Yuran Kelab Guru &amp; Staf — v2.0</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<header>
-  <h1>Sistem Yuran Kelab Guru &amp; Staf</h1>
-  <h2>Sekolah Kebangsaan Sungai Balai</h2>
-  <div class="versi">Versi 2.2</div>
-</header>
-
-<!-- SUMMARY CARDS -->
-<div class="cards">
-  <div class="card"><h3>Jumlah Kutipan</h3><p id="sumKutipan" class="green">RM 0.00</p></div>
-  <div class="card"><h3>Jumlah Perbelanjaan</h3><p id="sumBelanja" class="red">RM 0.00</p></div>
-  <div class="card"><h3>Baki</h3><p id="sumBaki" class="blue">RM 0.00</p></div>
-</div>
-
-<!-- ADMIN PANEL -->
-<div class="panel">
-  <h2>🔐 Panel Admin</h2>
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <input id="adminPass" type="password" placeholder="Kata Laluan Admin">
-    <button id="loginBtn" class="primary">Log Masuk</button>
-    <button id="logoutBtn" class="danger" style="display:none">Log Keluar</button>
-  </div>
-
-  <div id="adminTools" style="display:none;margin-top:15px">
-    <h3>Tambah Ahli</h3>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <input id="namaBaru" type="text" placeholder="Nama">
-      <select id="jawatanBaru">
-        <option value="">Pilih Jawatan</option>
-        <option value="Guru">Guru</option>
-        <option value="Staf">Staf</option>
-      </select>
-      <button id="btnTambah" class="success">Tambah</button>
+  <header class="site-header">
+    <div class="container">
+      <h1>Sistem Yuran Kelab Guru &amp; Staf</h1>
+      <p class="subtitle">Sekolah Kebangsaan Sungai Balai — <span id="versi">versi 2.0</span></p>
     </div>
+  </header>
 
-    <h3 style="margin-top:20px">Tambah Perbelanjaan</h3>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <input id="tarikhBelanja" type="date">
-      <input id="tujuanBelanja" type="text" placeholder="Tujuan">
-      <input id="jumlahBelanja" type="number" placeholder="Jumlah">
-      <button id="btnTambahBelanja" class="danger">Tambah Belanja</button>
+  <main class="container">
+    <section class="cards" aria-hidden="false">
+      <div class="card">
+        <div class="card-title">Jumlah Kutipan</div>
+        <div class="card-value green" id="jumlahKutipan">RM 0.00</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Jumlah Perbelanjaan</div>
+        <div class="card-value red" id="jumlahBelanja">RM 0.00</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Baki</div>
+        <div class="card-value blue" id="baki">RM 0.00</div>
+      </div>
+    </section>
+
+    <section class="panel" id="adminPanel">
+      <h2>🔐 Panel Admin</h2>
+
+      <div class="row">
+        <input id="adminPass" type="password" placeholder="Masukkan kata laluan" />
+        <button id="loginBtn" class="btn primary">Log Masuk</button>
+        <button id="logoutBtn" class="btn danger" style="display:none">Log Keluar</button>
+        <label id="loginNotice" class="login-notice" aria-live="polite"></label>
+      </div>
+
+      <div id="adminControls" style="display:none;margin-top:12px">
+        <div class="row">
+          <input id="namaAhli" type="text" placeholder="Nama Ahli" />
+          <select id="jawatanSelect">
+            <option value="">Pilih Jawatan</option>
+            <option value="Guru">Guru</option>
+            <option value="Staf">Staf</option>
+          </select>
+          <button id="tambahBtn" class="btn success">Tambah Ahli</button>
+        </div>
+
+        <hr/>
+
+        <h3>Tambah Perbelanjaan</h3>
+        <div class="row">
+          <input id="belanjaTarikh" type="text" placeholder="Tarikh (D/M/YYYY) - pilih atau taip" />
+          <input id="belanjaTujuan" type="text" placeholder="Tujuan" />
+          <input id="belanjaJumlah" type="text" placeholder="Jumlah (nombor sahaja)" />
+          <input id="belanjaCatatan" type="text" placeholder="Catatan (optional)" />
+          <button id="tambahBelanjaBtn" class="btn danger">Tambah Belanja</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>📊 Rekod Bayaran Ahli</h2>
+      <p class="muted">Klik ikon ✏️ untuk edit nama/jawatan; ikon 🗑️ untuk arkib. Klik tanda ❌/✅ pada bulan untuk kemaskini (admin sahaja).</p>
+      <div class="table-wrap">
+        <table id="bayaranTable" role="table" aria-label="Rekod Bayaran"></table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>💰 Rekod Perbelanjaan Kelab</h2>
+      <div class="table-wrap">
+        <table id="belanjaTable" role="table" aria-label="Rekod Perbelanjaan"></table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>API: <span id="apiUrl"></span></small>
     </div>
+  </footer>
 
-    <p id="adminMsg" style="color:var(--blue);margin-top:10px"></p>
-  </div>
-</div>
-
-<!-- BAYARAN PANEL -->
-<div class="panel">
-  <h2>📘 Rekod Bayaran Ahli</h2>
-  <table id="tblBayaran"></table>
-</div>
-
-<!-- BELANJA PANEL -->
-<div class="panel">
-  <h2>💰 Rekod Perbelanjaan</h2>
-  <table id="tblBelanja"></table>
-</div>
-
-<!-- MODAL KEMASKINI BAYARAN -->
-<div id="modalBayaran" class="modal-bg">
-  <div class="modal">
-    <h3>Kemaskini Bayaran</h3>
-    <p id="modalNama"></p>
-    <p id="modalBulan"></p>
-
-    <select id="pilihJumlah">
-      <option value="0">0</option>
-      <option value="10">10</option>
-      <option value="20">20</option>
-    </select>
-
-    <p style="margin-top:10px">Atau masukkan sendiri:</p>
-    <input id="customJumlah" type="number" placeholder="Jumlah manual">
-
-    <div style="text-align:right;margin-top:15px">
-      <button id="btnSimpanBayaran" class="success small">Simpan</button>
-      <button id="btnTutupModal" class="danger small">Tutup</button>
-    </div>
-  </div>
-</div>
-
-<script>
-/* ---------------------------------------------------- */
-/* CONFIG */
-/* ---------------------------------------------------- */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbySCWOoyk8WVs7ktDRWFoe6-KZ1WlpjbIRtFwE-xcoWNSiIMWatBiJMqUr2ns_oCGoQ/exec";
-const API_KEY = "Sksb@abab023";
-
-let isAdmin = false;
-let dataMaster = null;
-
-/* ---------------------------------------------------- */
-/* HELPER */
-/* ---------------------------------------------------- */
-function RM(v){ return "RM "+Number(v||0).toFixed(2); }
-
-/* ---------------------------------------------------- */
-/* LOAD DATA */
-/* ---------------------------------------------------- */
-async function loadData(){
-  const res = await fetch(SCRIPT_URL+"?t="+Date.now());
-  const json = await res.json();
-  dataMaster = json;
-
-  renderSummary(json);
-  renderBayaran(json);
-  renderBelanja(json);
-}
-
-/* ---------------------------------------------------- */
-/* SUMMARY */
-/* ---------------------------------------------------- */
-function renderSummary(j){
-  const rows = j.bayaran.slice(1);
-  const idxSudah = j.bayaran[0].indexOf("Jumlah Sudah Bayar");
-  const idxBelum = j.bayaran[0].indexOf("Jumlah Belum Bayar");
-
-  let totSudah=0, totBelanja=0;
-
-  rows.forEach(r=>totSudah += Number(r[idxSudah])||0);
-  j.belanja.slice(1).forEach(r=> totBelanja += Number(r[2])||0);
-
-  document.getElementById("sumKutipan").textContent = RM(totSudah);
-  document.getElementById("sumBelanja").textContent = RM(totBelanja);
-  document.getElementById("sumBaki").textContent = RM(totSudah-totBelanja);
-}
-
-/* ---------------------------------------------------- */
-/* BAYARAN TABLE */
-/* ---------------------------------------------------- */
-function renderBayaran(j){
-  const tbl = document.getElementById("tblBayaran");
-  const header = j.bayaran[0];
-  const rows = j.bayaran.slice(1);
-
-  let h = "<tr>";
-  header.forEach(hc=> h += `<th>${hc}</th>`);
-  if(isAdmin){
-    h += "<th>✏</th><th>🗑</th>";
-  }
-  h += "</tr>";
-
-  let b = "";
-  rows.forEach((r,i)=>{
-    b += "<tr>";
-    r.forEach((c,ci)=>{
-
-      if(ci>=2 && ci<=13){
-        const v = Number(c)||0;
-        if(v>0)
-          b += `<td class='cell-paid'>${v} ✅</td>`;
-        else
-          b += `<td class='cell-missed'>❌</td>`;
-        return;
-      }
-
-      if(header[ci]==="Jumlah Sudah Bayar"){
-        b += `<td class='col-sudah'>${c}</td>`; return;
-      }
-      if(header[ci]==="Jumlah Belum Bayar"){
-        b += `<td class='col-belum'>${c}</td>`; return;
-      }
-
-      b += `<td>${c}</td>`;
-    });
-
-    if(isAdmin){
-      b += `<td><span class='ico-btn' onclick="editAhli(${i})">✏</span></td>`;
-      b += `<td><span class='ico-btn' onclick="padamAhli(${i})">🗑</span></td>`;
-    }
-
-    b += "</tr>";
-  });
-
-  tbl.innerHTML = h + b;
-}
-
-/* ---------------------------------------------------- */
-/* BELANJA TABLE */
-/* ---------------------------------------------------- */
-function renderBelanja(j){
-  const tbl = document.getElementById("tblBelanja");
-  const header = j.belanja[0];
-  const rows = j.belanja.slice(1);
-
-  let h = "<tr>";
-  header.forEach(c=> h += `<th>${c}</th>`);
-  h += "</tr>";
-
-  let b = "";
-  rows.forEach(r=>{
-    b += "<tr>";
-    b += `<td>${r[0]}</td>`;
-    b += `<td>${r[1]}</td>`;
-    b += `<td>${RM(r[2])}</td>`;
-    b += `<td>${r[3]}</td>`;
-    b += "</tr>";
-  });
-
-  tbl.innerHTML = h + b;
-}
-
-/* ---------------------------------------------------- */
-/* ADMIN LOGIN */
-/* ---------------------------------------------------- */
-document.getElementById("loginBtn").onclick = ()=>{
-  const val = document.getElementById("adminPass").value;
-  if(val===API_KEY){
-    isAdmin=true;
-    document.getElementById("adminTools").style.display="block";
-    document.getElementById("logoutBtn").style.display="inline-block";
-    loadData();
-  } else {
-    alert("Kata laluan salah");
-  }
-};
-
-document.getElementById("logoutBtn").onclick = ()=>{
-  isAdmin=false;
-  document.getElementById("adminTools").style.display="none";
-  document.getElementById("logoutBtn").style.display="none";
-  loadData();
-};
-
-/* ---------------------------------------------------- */
-/* TAMBAH AHLI */
-/* ---------------------------------------------------- */
-document.getElementById("btnTambah").onclick = async ()=>{
-  const nama = document.getElementById("namaBaru").value.trim();
-  const jaw = document.getElementById("jawatanBaru").value;
-
-  if(!nama || !jaw){ alert("Isi semua maklumat."); return; }
-
-  await fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"tambahAhli",
-      apiKey:API_KEY,
-      nama:nama,
-      jawatan:jaw
-    })
-  });
-
-  await loadData();
-  alert("Ahli berjaya ditambah!");
-};
-
-/* ---------------------------------------------------- */
-/* EDIT AHLI */
-/* ---------------------------------------------------- */
-async function editAhli(i){
-  const row = dataMaster.bayaran[i+1];
-  const nama = prompt("Nama baru:", row[0]);
-  if(nama===null) return;
-
-  const jaw = prompt("Jawatan baru (Guru/Staf):", row[1]);
-  if(jaw===null) return;
-
-  await fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"editAhli",
-      apiKey:API_KEY,
-      index:i+1,
-      nama:nama,
-      jawatan:jaw
-    })
-  });
-
-  await loadData();
-}
-
-/* ---------------------------------------------------- */
-/* PADAM / ARKIBKAN AHLI */
-/* ---------------------------------------------------- */
-async function padamAhli(i){
-  if(!confirm("Pindah ke arkib?")) return;
-
-  await fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"arkibAhli",
-      apiKey:API_KEY,
-      index:i+1
-    })
-  });
-
-  await loadData();
-}
-
-/* ---------------------------------------------------- */
-/* TAMBAH BELANJA */
-/* ---------------------------------------------------- */
-document.getElementById("btnTambahBelanja").onclick = async ()=>{
-  let t = document.getElementById("tarikhBelanja").value;
-  let u = document.getElementById("tujuanBelanja").value;
-  let j = document.getElementById("jumlahBelanja").value;
-
-  if(!t || !u || !j){
-    alert("Isi semua maklumat perbelanjaan.");
-    return;
-  }
-
-  await fetch(SCRIPT_URL,{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      action:"tambahBelanja",
-      apiKey:API_KEY,
-      tarikh:t,
-      tujuan:u,
-      jumlah:j
-    })
-  });
-
-  await loadData();
-};
-
-/* ---------------------------------------------------- */
-/* LOAD AWAL */
-/* ---------------------------------------------------- */
-loadData();
-</script>
+  <script src="script.js"></script>
 </body>
 </html>

@@ -1,0 +1,49 @@
+:root{
+  --bg:#f3f6f9; --card:#fff; --muted:#6b7280;
+  --green:#16a34a; --red:#e11d48; --blue:#0b69ff;
+  --max-width:1100px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif;background:var(--bg);color:#111}
+.container{max-width:var(--max-width);margin:0 auto;padding:20px}
+.site-header{padding:28px 0;text-align:center}
+.site-header h1{margin:0;font-size:30px}
+.subtitle{margin:6px 0 0;color:var(--muted)}
+.cards{display:flex;gap:18px;justify-content:center;padding:10px;flex-wrap:wrap}
+.card{background:var(--card);border-radius:10px;padding:18px 22px;box-shadow:0 6px 16px rgba(2,6,23,0.06);width:300px;text-align:center}
+.card-title{color:var(--muted);font-weight:600}
+.card-value{font-weight:800;font-size:22px;margin-top:8px}
+.green{color:var(--green)} .red{color:var(--red)} .blue{color:var(--blue)}
+
+.panel{background:var(--card);margin:18px 0;padding:18px;border-radius:10px;box-shadow:0 6px 18px rgba(2,6,23,0.04)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+input[type="text"], input[type="password"], select{
+  padding:10px;border-radius:8px;border:1px solid #d1d5db;font-size:15px;min-width:160px;
+}
+.btn{padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.primary{background:#2563eb;color:#fff}
+.success{background:var(--green);color:#fff}
+.danger{background:var(--red);color:#fff}
+.login-notice{margin-left:10px;color:var(--muted);font-weight:600}
+
+.table-wrap{overflow:auto;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px;border:1px solid #e6eef8;text-align:center}
+th{background:#eef6ff;color:#0b4a73}
+tbody tr:nth-child(even){background:#fbfdff}
+.small-icon{cursor:pointer;font-size:18px;padding:6px;border-radius:6px;background:transparent}
+.muted{color:var(--muted)}
+.muted-note{color:var(--muted);margin-top:8px}
+
+/* cell styles */
+.cell-paid{color:var(--green);font-weight:700}
+.cell-missed{color:var(--red);font-weight:700}
+.col-sudah{color:var(--blue);font-weight:700}
+.col-belum{color:var(--red);font-weight:700}
+
+/* responsive */
+@media (max-width:900px){
+  .cards{flex-direction:column;align-items:center}
+  .card{width:92%}
+  input[type="text"], input[type="password"], select{min-width:120px}
+}
